@@ -19,9 +19,7 @@ const Home: NextPage = () => {
             </a>
           </div>
         </div>
-        <p className="text-lg">
-          Test
-        </p>
+        <p className="text-lg">Test</p>
         <ParsingToggle />
       </div>
       <Replay />
