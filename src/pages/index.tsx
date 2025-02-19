@@ -1,4 +1,4 @@
-import { RlHead } from "@/components/head";
+4import { RlHead } from "@/components/head";
 import { ParsingToggle, Replay } from "@/features/replay";
 import { GithubIcon } from "@/components/icons";
 import type { NextPage } from "next";
@@ -22,7 +22,7 @@ const Home: NextPage = () => {
         <p className="text-lg">
           The Rocket League Replay Parser decodes a replay and presents a small
           array of statistics. This tech demo shows the versatility of{" "}
-          <a href="https://github.com/nickbabcock/boxcars">boxcars</a>, the
+          <a href="https://github.com/Dave1482/boxcars">boxcars</a>, the
           underlying Rust-based library, as replays are parsed locally within
           the browser via a Wasm web worker. Additionally, one can instead opt
           into having the file uploaded to the edge to be parsed.
