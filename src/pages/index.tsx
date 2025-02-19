@@ -14,22 +14,13 @@ const Home: NextPage = () => {
         <div className="grid grid-cols-[1fr_32px] gap-2 md:gap-6">
           <h1 className="text-2xl font-bold">Rocket League Replay Parser</h1>
           <div>
-            <a href="https://github.com/nickbabcock/rl-web">
+            <a href="https://github.com/Dave1482/rl-web">
               <GithubIcon alt="Rocket League Replay Parser website Github Repo" />
             </a>
           </div>
         </div>
         <p className="text-lg">
-          The Rocket League Replay Parser decodes a replay and presents a small
-          array of statistics. This tech demo shows the versatility of{" "}
-          <a href="https://github.com/Dave1482/boxcars">boxcars</a>, the
-          underlying Rust-based library, as replays are parsed locally within
-          the browser via a Wasm web worker. Additionally, one can instead opt
-          into having the file uploaded to the edge to be parsed.
-        </p>
-        <p className="text-lg">
-          A similar, but offline tool is{" "}
-          <a href="https://github.com/nickbabcock/rrrocket">rrrocket</a>.
+          Test
         </p>
         <ParsingToggle />
       </div>
