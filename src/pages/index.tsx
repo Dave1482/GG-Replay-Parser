@@ -1,4 +1,4 @@
-4import { RlHead } from "@/components/head";
+import { RlHead } from "@/components/head";
 import { ParsingToggle, Replay } from "@/features/replay";
 import { GithubIcon } from "@/components/icons";
 import type { NextPage } from "next";
