@@ -1,5 +1,7 @@
-import { PlaywrightTestConfig } from "@playwright/test";
-const config: PlaywrightTestConfig = {
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests/e2e",
   webServer: {
     command: "npm run dev",
     port: 3000,
@@ -7,15 +9,9 @@ const config: PlaywrightTestConfig = {
     reuseExistingServer: !process.env.CI,
   },
   use: {
+    baseURL: "http://localhost:3000",
     launchOptions: {
       slowMo: 100, // Add slight delay to help with auth flows
     },
   },
-  env: {
-    DISCORD_AUTH_URL: "http://localhost:3000/auth/discord",
-    DISCORD_EMAIL: process.env.DISCORD_EMAIL,
-    DISCORD_PASSWORD: process.env.DISCORD_PASSWORD,
-  },
-};
-
-export default config;
+});
