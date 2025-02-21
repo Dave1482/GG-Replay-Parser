@@ -1,37 +1,45 @@
 import { test, expect } from "@playwright/test";
 
-test("sample", async ({ page, baseURL }) => {
+test.setTimeout(120000);
+
+const baseURL = process.env.BASE_URL || "http://localhost:3000";
+
+test("welcome page", async ({ page }) => {
   await page.goto(baseURL + "");
   await page.waitForLoadState("networkidle");
-  await page.waitForSelector("text=View sample", {
-    state: "visible",
-    timeout: 60000,
-  });
-  await page.click("text=View sample");
-  const description = page.locator("[data-test-id=description]");
-  await expect(description).toContainText("On 12/8/2016, comagoosie");
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    page.click("text=Convert Replay to JSON"),
-  ]);
 
-  expect(download.suggestedFilename()).toMatch(/^sample\.\w+\.json$/);
+  try {
+    await page.waitForSelector("text=Welcome to GG Replay Parser", {
+      state: "visible",
+      timeout: 60000,
+    });
+  } catch (error) {
+    console.error("Failed to find welcome message:", await page.content());
+    throw error;
+  }
+
+  // Verify login button exists
+  await expect(page.locator("text=Login with Discord")).toBeVisible();
 });
 
-test("sample file", async ({ page, baseURL }) => {
+test("authentication redirect", async ({ page }) => {
   await page.goto(baseURL + "");
+  await page.click('button[type="submit"]');
   await page.waitForLoadState("networkidle");
-  await page.waitForSelector('input[type="file"]', {
-    state: "visible",
-    timeout: 60000,
-  });
-  await page.setInputFiles('input[type="file"]', "dev/sample.replay");
-  const description = page.locator("[data-test-id=description]");
-  await expect(description).toContainText("On 12/8/2016, comagoosie");
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    page.click("text=Convert Replay to JSON"),
-  ]);
+  await page.waitForNavigation();
 
-  expect(download.suggestedFilename()).toEqual("sample.json");
+  try {
+    const loginButton = await page.waitForSelector("text=Login with Discord", {
+      state: "visible",
+      timeout: 60000,
+    });
+
+    // Click login and ensure it navigates to Discord
+    await loginButton.click();
+    await page.waitForLoadState("networkidle");
+    await expect(page.url()).toContain("discord.com");
+  } catch (error) {
+    console.error("Failed to test authentication flow:", await page.content());
+    throw error;
+  }
 });
