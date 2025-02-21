@@ -6,6 +6,7 @@ export type ParseMode = "local" | "edge";
 interface UiStoreData {
   parseMode: ParseMode;
   prettyPrint: boolean;
+  currentPage: number; // 0 = aggregate, 1-7 = individual replays
 }
 
 interface UiStore extends UiStoreData {
@@ -18,6 +19,7 @@ interface UiStore extends UiStoreData {
 const initialData: UiStoreData = {
   parseMode: "local",
   prettyPrint: false,
+  currentPage: 0,
 };
 
 const useUiStore = create<UiStore>()((set) => ({
