@@ -2,6 +2,11 @@ import { test, expect } from "@playwright/test";
 
 test("sample", async ({ page, baseURL }) => {
   await page.goto(baseURL + "");
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector("text=View sample", {
+    state: "visible",
+    timeout: 60000,
+  });
   await page.click("text=View sample");
   const description = page.locator("[data-test-id=description]");
   await expect(description).toContainText("On 12/8/2016, comagoosie");
@@ -15,6 +20,11 @@ test("sample", async ({ page, baseURL }) => {
 
 test("sample file", async ({ page, baseURL }) => {
   await page.goto(baseURL + "");
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector('input[type="file"]', {
+    state: "visible",
+    timeout: 60000,
+  });
   await page.setInputFiles('input[type="file"]', "dev/sample.replay");
   const description = page.locator("[data-test-id=description]");
   await expect(description).toContainText("On 12/8/2016, comagoosie");
