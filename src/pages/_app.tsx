@@ -3,16 +3,19 @@ import "@/styles/global.css";
 import type { AppProps } from "next/app";
 import { ReplayParserProvider } from "@/features/worker";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SessionProvider } from "next-auth/react";
 
 const queryClient = new QueryClient();
 
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ReplayParserProvider>
-        <Component {...pageProps} />
-      </ReplayParserProvider>
-    </QueryClientProvider>
+    <SessionProvider session={session}>
+      <QueryClientProvider client={queryClient}>
+        <ReplayParserProvider>
+          <Component {...pageProps} />
+        </ReplayParserProvider>
+      </QueryClientProvider>
+    </SessionProvider>
   );
 }
 
