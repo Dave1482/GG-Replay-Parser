@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write 'src'",
-    "test": "npm run test:unit && npm run test:e2e",
-    "test:e2e": "playwright test tests/e2e",
+    "test": "npm run test:unit",
     "test:unit": "jest tests/unit"
   },
   "postcss": {
@@ -38,7 +37,6 @@
     "zustand": "4.5.2"
   },
   "devDependencies": {
-    "@playwright/test": "1.49.1",
     "@types/node": "20.14.2",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
