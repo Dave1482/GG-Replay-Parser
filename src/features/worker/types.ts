@@ -31,6 +31,7 @@ export interface PlayerStat {
   Score: number;
   Saves: number;
   Assists: number;
+  Demos: number;
   OnlineID: string;
   Platform: {
     kind: string;
