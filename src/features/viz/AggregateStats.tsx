@@ -91,7 +91,7 @@ export const AggregateStats = () => {
           gameStats[team].shots += player.Shots;
           gameStats[team].saves += player.Saves;
           gameStats[team].assists += player.Assists;
-          gameStats[team].demos += player.Demos;
+          gameStats[team].demos += player.DemolishFx;
           gameStats[team].score += player.Score;
         });
 
