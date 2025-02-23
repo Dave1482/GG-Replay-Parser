@@ -21,6 +21,20 @@ export const TeamScores = ({
         <span className="orange-team font-bold">{team1score}</span>
       </div>
     )}
+    {team0score === undefined && team1score !== undefined && (
+      <div className="text-7xl">
+        <span className="blue-team font-bold">0</span>
+        <span> - </span>
+        <span className="orange-team font-bold">{team1score}</span>
+      </div>
+    )}
+    {team0score !== undefined && team1score === undefined && (
+      <div className="text-7xl">
+        <span className="blue-team font-bold">{team0score}</span>
+        <span> - </span>
+        <span className="orange-team font-bold">0</span>
+      </div>
+    )}
     <div className="flex items-center space-x-4">
       <button
         className="btn"
