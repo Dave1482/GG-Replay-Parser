@@ -35,8 +35,16 @@ export const Report = () => {
           <h3 className="text-2xl">Score:</h3>
         </div>
         <TeamScores
-          team0score={totalTeamGoals.team0}
-          team1score={totalTeamGoals.team1}
+          if ( !totalTeamGoals.team0 ) {
+            team0score=0
+          } else {
+            team0score={totalTeamGoals.team0}
+          }
+          if ( !totalTeamGoals.team1 ) {
+            team1score=0
+          } else {
+            team1score={totalTeamGoals.team1}
+          }
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
