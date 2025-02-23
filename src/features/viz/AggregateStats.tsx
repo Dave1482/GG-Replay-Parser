@@ -5,6 +5,7 @@ interface TeamStats {
   shots: number;
   saves: number;
   assists: number;
+  demos: number;
   score: number;
   playerNames: string[];
 }
@@ -39,6 +40,10 @@ const TeamStatsDisplay = ({
         <div>
           <h4 className="text-sm text-gray-600 dark:text-gray-400">Assists</h4>
           <p className="text-xl font-bold">{stats.assists}</p>
+        </div>
+        <div>
+          <h4 className="text-sm text-gray-600 dark:text-gray-400">Demos</h4>
+          <p className="text-xl font-bold">{stats.demos}</p>
         </div>
       </div>
       <div>
@@ -75,8 +80,8 @@ export const AggregateStats = () => {
 
         // Initialize the game stats
         const gameStats = {
-          team0: { goals: 0, shots: 0, saves: 0, assists: 0, score: 0 },
-          team1: { goals: 0, shots: 0, saves: 0, assists: 0, score: 0 },
+          team0: { goals: 0, shots: 0, saves: 0, assists: 0, demos: 0, score: 0 },
+          team1: { goals: 0, shots: 0, saves: 0, assists: 0, demos: 0, score: 0 },
         };
 
         // Sum up stats for each team in this game
@@ -86,6 +91,7 @@ export const AggregateStats = () => {
           gameStats[team].shots += player.Shots;
           gameStats[team].saves += player.Saves;
           gameStats[team].assists += player.Assists;
+          gameStats[team].demos += player.Demos;
           gameStats[team].score += player.Score;
         });
 
@@ -94,12 +100,14 @@ export const AggregateStats = () => {
         acc.team0.shots += gameStats.team0.shots;
         acc.team0.saves += gameStats.team0.saves;
         acc.team0.assists += gameStats.team0.assists;
+        acc.team0.demos += gameStats.team0.demos;
         acc.team0.score += gameStats.team0.score;
 
         acc.team1.goals += gameStats.team1.goals;
         acc.team1.shots += gameStats.team1.shots;
         acc.team1.saves += gameStats.team1.saves;
         acc.team1.assists += gameStats.team1.assists;
+        acc.team1.demos += gameStats.team1.demos;
         acc.team1.score += gameStats.team1.score;
       }
 
@@ -111,6 +119,7 @@ export const AggregateStats = () => {
         shots: 0,
         saves: 0,
         assists: 0,
+        demos: 0,
         score: 0,
         playerNames: [],
       },
@@ -119,6 +128,7 @@ export const AggregateStats = () => {
         shots: 0,
         saves: 0,
         assists: 0,
+        demos: 0,
         score: 0,
         playerNames: [],
       },
