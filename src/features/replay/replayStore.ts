@@ -154,8 +154,8 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
     averageScore: Math.round(totalScore / replays.length),
     totalGoals,
     winPercentage: Math.round((wins / replays.length) * 100),
-    team0Wins,
-    team1Wins,
+    team0Wins: Math.round(team0Wins),
+    team1Wins: Math.round(team1Wins),
   };
 };
 
