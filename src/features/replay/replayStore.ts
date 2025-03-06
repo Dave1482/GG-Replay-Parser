@@ -50,6 +50,8 @@ interface AggregateStats {
   averageScore: number;
   totalGoals: number;
   winPercentage: number;
+  totalWins: number;
+  totalLosses: number;
 }
 
 interface ReplayStore {
@@ -108,6 +110,8 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
       averageScore: 0,
       totalGoals: 0,
       winPercentage: 0,
+      totalWins: 0,
+      totalLosses: 0,
     };
   }
 
@@ -144,6 +148,8 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
     averageScore: Math.round(totalScore / replays.length),
     totalGoals,
     winPercentage: Math.round((wins / replays.length) * 100),
+    totalWins: Math.round((wins / replays.length) * replays.length),
+    totalLosses: replays.length - totalWins,
   };
 };
 
