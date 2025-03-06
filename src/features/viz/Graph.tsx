@@ -77,7 +77,7 @@ export const Graph = ({ scores, defaultMax, valFn, title }: GraphProps) => {
   const scoreBars = scores.map((x, i) => (
     <rect
       key={`score ${i}`}
-      height={`${yPointHeight - 4}`}
+      height={`${yPointHeight - 19}`}
       x="0"
       y={i * yPointHeight}
       width={scale(valFn(x), 0, maxScore, 0, graphWidth)}
