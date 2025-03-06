@@ -89,10 +89,10 @@ export const Report = () => {
             scores={stats}
           />
           <Graph
-            key="Player Shots"
-            title="Player Shots"
-            defaultMax={8}
-            valFn={(x) => x.Shots}
+            key="Player Assists"
+            title="Player Assists"
+            defaultMax={4}
+            valFn={(x) => x.Assists}
             scores={stats}
           />
           <Graph
@@ -103,10 +103,10 @@ export const Report = () => {
             scores={stats}
           />
           <Graph
-            key="Player Assists"
-            title="Player Assists"
-            defaultMax={4}
-            valFn={(x) => x.Assists}
+            key="Player Shots"
+            title="Player Shots"
+            defaultMax={8}
+            valFn={(x) => x.Shots}
             scores={stats}
           />
         </div>
