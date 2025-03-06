@@ -26,7 +26,7 @@ export const Graph = ({ scores, defaultMax, valFn, title }: GraphProps) => {
 
   // width and height of svg
   const totalWidthPx = 600;
-  const totalHeightPx = (scores.length + 1) * (yPointHeight - 15);
+  const totalHeightPx = (scores.length + 1) * yPointHeight;
 
   // Width of the name legend
   const nameWidthPx = 200;
@@ -47,7 +47,7 @@ export const Graph = ({ scores, defaultMax, valFn, title }: GraphProps) => {
   const maxScore = Math.max(defaultMaxScore, maxPlayerScore);
 
   // Number of tick marks
-  const lineCount = Math.ceil(maxScore / scoreSpacing) + 1;
+  const lineCount = 0; //Math.ceil(maxScore / scoreSpacing) + 1;
 
   const graphWidth = totalWidthPx - nameWidthPx - nameGapPx - scoreLabelWidthPx;
   const tickWidth = graphWidth / (lineCount - 1);
@@ -77,7 +77,7 @@ export const Graph = ({ scores, defaultMax, valFn, title }: GraphProps) => {
   const scoreBars = scores.map((x, i) => (
     <rect
       key={`score ${i}`}
-      height={`${yPointHeight - 19}`}
+      height={`${yPointHeight - 14}`}
       x="0"
       y={i * yPointHeight}
       width={scale(valFn(x), 0, maxScore, 0, graphWidth)}
