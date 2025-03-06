@@ -26,7 +26,7 @@ export const Graph = ({ scores, defaultMax, valFn, title }: GraphProps) => {
 
   // width and height of svg
   const totalWidthPx = 600;
-  const totalHeightPx = (scores.length + 1) * (yPointHeight - 60);
+  const totalHeightPx = (scores.length + 1) * (yPointHeight - 15);
 
   // Width of the name legend
   const nameWidthPx = 200;
