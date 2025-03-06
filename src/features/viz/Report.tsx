@@ -5,12 +5,12 @@ import { TeamScores } from "./TeamScores";
 import { DownloadReplayJson } from "./DownloadReplayJson";
 import { AggregateStats } from "./AggregateStats";
 import { useReplays } from "../replay/replayStore";
+import { useAggregateStats } from "../replay/replayStore";
 
 export const Report = () => {
   const replays = useReplays();
   const [currentPage, setCurrentPage] = useState(1); // Always start at first replay uploaded
-  let team0Wins = {stats.team0Wins};
-  let team1Wins = {stats.team1Wins};
+  const stats = useAggregateStats();
   if (replays.length === 0) {
     return null;
   }
@@ -36,8 +36,8 @@ export const Report = () => {
           <h3 className="text-2xl">Score:</h3>
         </div>
         <TeamScores
-          team0score={team0Wins}//{totalTeamGoals.team0}
-          team1score={team1Wins}//{totalTeamGoals.team1}
+          team0score={stats.team0Wins}//{totalTeamGoals.team0}
+          team1score={stats.team1Wins}//{totalTeamGoals.team1}
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
