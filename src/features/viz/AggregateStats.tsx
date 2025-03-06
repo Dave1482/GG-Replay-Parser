@@ -30,17 +30,17 @@ const TeamStatsDisplay = ({
           <p className="text-xl font-bold">{stats.goals}</p>
         </div>
         <div>
-          <h4 className="text-sm text-gray-600 dark:text-gray-400">Shots</h4>
-          <p className="text-xl font-bold">{stats.shots}</p>
+          <h4 className="text-sm text-gray-600 dark:text-gray-400">Assists</h4>
+          <p className="text-xl font-bold">{stats.assists}</p>
         </div>
         <div>
           <h4 className="text-sm text-gray-600 dark:text-gray-400">Saves</h4>
           <p className="text-xl font-bold">{stats.saves}</p>
         </div>
         <div>
-          <h4 className="text-sm text-gray-600 dark:text-gray-400">Assists</h4>
-          <p className="text-xl font-bold">{stats.assists}</p>
-        </div>
+          <h4 className="text-sm text-gray-600 dark:text-gray-400">Shots</h4>
+          <p className="text-xl font-bold">{stats.shots}</p>
+        </div>        
         <div>
           <h4 className="text-sm text-gray-600 dark:text-gray-400">Demos</h4>
           <p className="text-xl font-bold">{stats.demos}</p>
