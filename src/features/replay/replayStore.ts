@@ -110,6 +110,8 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
       averageScore: 0,
       totalGoals: 0,
       winPercentage: 0,
+      team0Wins: 0,
+      team1Wins: 0,
     };
   }
 
