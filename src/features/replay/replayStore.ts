@@ -50,8 +50,8 @@ interface AggregateStats {
   averageScore: number;
   totalGoals: number;
   winPercentage: number;
-  totalWins: number;
-  totalLosses: number;
+  team0Wins: number;
+  team1Wins: number;
 }
 
 interface ReplayStore {
