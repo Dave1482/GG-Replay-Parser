@@ -118,6 +118,8 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
   let totalGoals = 0;
   let totalScore = 0;
   let wins = 0;
+  let team0Wins = 0;
+  let team1Wins = 0;
 
   replays.forEach((replay) => {
     // Calculate goals directly from team scores
@@ -132,6 +134,10 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
 
       if (userTeam === 0 && team0Score > team1Score) wins++;
       if (userTeam === 1 && team1Score > team0Score) wins++;
+
+      //add wins per team
+      if (userTeam === 0 && team0Score > team1Score) team0Wins++;
+      if (userTeam === 1 && team1Score > team0Score) team1Wins++;
 
       let gameTotal = 0;
       playerStats.forEach((player) => {
