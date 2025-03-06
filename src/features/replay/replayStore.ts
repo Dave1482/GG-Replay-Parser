@@ -136,8 +136,8 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
       if (userTeam === 1 && team1Score > team0Score) wins++;
 
       //add wins per team
-      if (userTeam === 0 && team0Score > team1Score) team0Wins++;
-      if (userTeam === 1 && team1Score > team0Score) team1Wins++;
+      if (team0Score > team1Score) team0Wins++;
+      if (team1Score > team0Score) team1Wins++;
 
       let gameTotal = 0;
       playerStats.forEach((player) => {
