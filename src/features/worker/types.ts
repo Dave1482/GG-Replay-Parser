@@ -56,8 +56,3 @@ export interface ReplayFile {
 export interface ReplayJsonOptions {
   pretty: boolean;
 }
-
-export interface ParseInputHelper {
-  filename: string;
-  data: string;
-}

@@ -1,4 +1,4 @@
-import { ParseInput, ParseInputHelper, useReplayParser } from "@/features/worker";
+import { ParseInput, useReplayParser } from "@/features/worker";
 import { useParseMode } from "@/stores/uiStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useReplayActions } from "./replayStore";

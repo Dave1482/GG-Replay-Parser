@@ -1,5 +1,4 @@
 import fs from "fs";
-import { DemolitionEvent } from "./useReplayAnalyzer";
 
 export class ReplayAnalyzer {
     private actorToPlayer: Record<string, string> = {};
@@ -49,8 +48,8 @@ export class ReplayAnalyzer {
         console.log(`Found ${Object.keys(this.actorToPlayer).length} player mappings`);
     }
 
-    findDemolitions(replayData: any): DemolitionEvent[] {
-        const demolitionEvents: DemolitionEvent[] = [];
+    findDemolitions(replayData: any): any[] {
+        const demolitionEvents: any[] = [];
         const frames = replayData?.network_frames?.frames || [];
         console.log(`\nAnalyzing ${frames.length} frames for demolitions...`);
         frames.forEach((frame: any, frameIdx: number) => {
@@ -83,10 +82,10 @@ export class ReplayAnalyzer {
                 });
             });
         });
-        return demolitionEvents || [];
+        return demolitionEvents;
     }
 
-    printDemolitionSummary(events: DemolitionEvent[]) {
+    printDemolitionSummary(events: any[]): void {
         if (events.length === 0) {
             console.log("\nNo demolitions found in this replay.");
             return;
@@ -109,18 +108,17 @@ export class ReplayAnalyzer {
             });
     }
 
-    analyzeReplayContent(content: string) {
+    analyzeReplayContent(content: string): void {
         try {
-          const replayData = JSON.parse(content);
-          this.exploreJsonStructure(replayData);
-          this.buildActorMappings(replayData);
-          const demolitionEvents = this.findDemolitions(replayData);
-          this.printDemolitionSummary(demolitionEvents);
+            const replayData = JSON.parse(content);
+            this.exploreJsonStructure(replayData);
+            this.buildActorMappings(replayData);
+            const demolitionEvents = this.findDemolitions(replayData);
+            this.printDemolitionSummary(demolitionEvents);
         } catch (error) {
-          console.error("Error analyzing replay content:", error);
+            console.error("Error analyzing replay content:", error);
         }
     }
-  
 
     getDemolitionEvents(content: string): any[] {
         try {

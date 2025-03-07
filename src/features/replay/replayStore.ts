@@ -1,25 +1,45 @@
 import { ParseMode } from "@/stores/uiStore";
 import { create } from "zustand";
-import { ParsedReplay, Replay, ParseInputHelper } from "../worker"; // Import ParseInput from ../worker
+import { ParsedReplay, ParseInput, Replay } from "../worker";
 import { ReplayAnalyzer } from "./ReplayAnalyzer";
-import { DemolitionEvent } from "./useReplayAnalyzer"; // Import DemolitionEvent
-import { ReplayInputHelper } from "./ReplayInput"; // Import ReplayInput
+import { DemolitionEvent, useReplayAnalyzer } from "./useReplayAnalyzer";
+
+class ReplayInput {
+  constructor(public readonly input: ParseInput) {}
+  path = () => {
+    if (typeof this.input === "string") {
+      return this.input;
+    } else {
+      return this.input.name;
+    }
+  };
+
+  name = () => {
+    const path = this.path();
+    return path.slice(path.lastIndexOf("/") + 1);
+  };
+
+  jsonName = () => this.name().replace(".replay", ".json");
+}
 
 interface ParseRequest {
-  input: ParseInputHelper | File; // Update to handle both ParseInput and File objects
+  input: ParseInput;
 }
 
 interface ParseArg {
-  input: ReplayInputHelper;
+  input: ReplayInput;
 }
 
 type ParseResult =
-  | { kind: "success" }
-  | { kind: "error"; error: unknown };
+  | {
+      kind: "success";
+    }
+  | {
+      kind: "error";
+      error: unknown;
+    };
 
-type ParseState =
-  | { kind: "initial" }
-  | (ParseArg & ParseResult);
+type ParseState = { kind: "initial" } | (ParseArg & ParseResult);
 
 export interface ReplayYield extends ParseArg {
   data: Replay;
@@ -50,16 +70,17 @@ interface ReplayStore {
 }
 
 const useReplayStore = create<ReplayStore>()((set) => ({
-  latest: { kind: "initial", input: new ReplayInputHelper({ filename: "placeholder.replay", data: "" }) }, // Provide necessary parameters
+  latest: { kind: "initial" },
   replays: [],
   aggregateStats: null,
   actions: {
     parseError: (error, { input }) =>
       set(() => ({
-        latest: { kind: "error", error, input: new ReplayInputHelper(input) },
+        latest: { kind: "error", error, input: new ReplayInput(input) },
       })),
     parsed: ({ replay, ...rest }, mode, { input }) => {
       set((state) => {
+        // Limit to 7 replays
         if (state.replays.length >= 7) {
           return state;
         }
@@ -68,15 +89,15 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           data: replay,
           ...rest,
           mode,
-          input: new ReplayInputHelper(input),
-          demolitionEvents: [], // Initialize the demolition events array
+          input: new ReplayInput(input),
+          demolitionEvents: [], // Ensure to initialize the demolition events array
         };
 
         const updatedReplays = [...state.replays, newReplay];
         const aggregateStats = calculateAggregateStats(updatedReplays);
 
         return {
-          latest: { kind: "success", input: new ReplayInputHelper(input) },
+          latest: { kind: "success", input: new ReplayInput(input) },
           replays: updatedReplays,
           aggregateStats,
         };
@@ -88,7 +109,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
       analyzer.analyzeReplayContent(content);
       const events = analyzer.findDemolitions(JSON.parse(content));
       console.log("Demolition events:", events);
-
+      
       set((state) => ({
         replays: state.replays.map((replay, index) => {
           if (index === state.replays.length - 1) {
@@ -104,8 +125,63 @@ const useReplayStore = create<ReplayStore>()((set) => ({
   },
 }));
 
-// Helper function to calculate aggregate stats
 const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
+    if (replays.length === 0) {
+        return {
+            totalGames: 0,
+            averageScore: 0,
+            totalGoals: 0,
+            winPercentage: 0,
+            team0Wins: 0,
+            team1Wins: 0,
+        };
+    }
+
+    let totalGoals = 0;
+    let totalScore = 0;
+    let wins = 0;
+    let team0Wins = 0;
+    let team1Wins = 0;
+
+    replays.forEach((replay) => {
+        const team0Score = replay.data.properties.Team0Score || 0;
+        const team1Score = replay.data.properties.Team1Score || 0;
+        totalGoals += team0Score + team1Score;
+
+        const playerStats = replay.data.properties.PlayerStats;
+
+        if (playerStats && playerStats.length > 0) {
+            const userStats = playerStats[0];
+            const userTeam = userStats.Team;
+
+            if (userTeam === 0 && team0Score > team1Score) wins++;
+            if (userTeam === 1 && team1Score > team0Score) wins++;
+
+            if (team0Score > team1Score) team0Wins++;
+            if (team1Score > team0Score) team1Wins++;
+
+            let gameTotal = 0;
+            playerStats.forEach((player) => {
+                if (player.Team === userTeam && player.Score > 0) {
+                    gameTotal += player.Score;
+                }
+            });
+            totalScore += gameTotal;
+        }
+    });
+
+    return {
+        totalGames: replays.length,
+        averageScore: Math.round(totalScore / replays.length),
+        totalGoals,
+        winPercentage: Math.round((wins / replays.length) * 100),
+        team0Wins: Math.round(team0Wins),
+        team1Wins: Math.round(team1Wins),
+    };
+};
+
+// Helper function to calculate aggregate stats
+/*const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
   if (replays.length === 0) {
     return {
       totalGames: 0,
@@ -124,6 +200,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
   let team1Wins = 0;
 
   replays.forEach((replay) => {
+    // Calculate goals directly from team scores
     const team0Score = replay.data.properties.Team0Score || 0;
     const team1Score = replay.data.properties.Team1Score || 0;
     totalGoals += team0Score + team1Score;
@@ -132,14 +209,17 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
     if (playerStats && playerStats.length > 0) {
       const userStats = playerStats[0];
       const userTeam = userStats.Team;
+
       if (userTeam === 0 && team0Score > team1Score) wins++;
       if (userTeam === 1 && team1Score > team0Score) wins++;
+
+      //add wins per team
       if (team0Score > team1Score) team0Wins++;
       if (team1Score > team0Score) team1Wins++;
 
       let gameTotal = 0;
       playerStats.forEach((player) => {
-        if (player.Team === userTeam && player.Score > 0) {
+        if (player.Team === userTeam) {
           gameTotal += player.Score;
         }
       });
@@ -155,13 +235,13 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
     team0Wins: Math.round(team0Wins),
     team1Wins: Math.round(team1Wins),
   };
-};
+};*/
 
-// Exports for accessing state and actions
 export const useReplayActions = () => useReplayStore((state) => state.actions);
 export const useLatestParse = () => useReplayStore((state) => state.latest);
 export const useReplays = () => useReplayStore((state) => state.replays);
-export const useAggregateStats = () => useReplayStore((state) => state.aggregateStats);
+export const useAggregateStats = () =>
+  useReplayStore((state) => state.aggregateStats);
 export const useParsedReplay = () => {
   const replays = useReplays();
   return replays.length > 0 ? replays[replays.length - 1] : null;

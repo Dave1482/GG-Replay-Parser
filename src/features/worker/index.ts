@@ -1,7 +1,6 @@
 export { ReplayParserProvider } from "./ReplayParserContext";
 export * from "./types";
 export { type ParseInput } from "./engine";
-export { ParseInputHelper } from "./types";
 export * from "./useReplayParser";
 
 export const workerQueryOptions = Object.freeze({
