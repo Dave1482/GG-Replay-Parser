@@ -18,6 +18,7 @@ export const useReplayAnalyzer = () => {
         reader.onload = () => {
             try {
                 const content = reader.result as string;
+                console.log("Replay content:", content);
                 const analyzer = new ReplayAnalyzer();
                 const events = analyzer.getDemolitionEvents(content);
                 setDemolitionEvents(events); // Assign the events to the state
