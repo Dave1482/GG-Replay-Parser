@@ -95,7 +95,7 @@ export const Report = () => {
                 </div>
             ) : null}
             <h3 className="text-xl font-semibold">Demolition Events:</h3>
-              {replay.demolitionEvents && (
+              {replay.demolitionEvents && replay.demolitionEvents.length > 0 ? (
                 <ul>
                   {replay.demolitionEvents.map((event, i) => (
                     <div key={i}>
@@ -105,7 +105,9 @@ export const Report = () => {
                     </div>
                   ))}
                 </ul>
-              )}
+              ) : (
+            <p>No demolition events found.</p>
+          )}}
         </div>
     );
 };
