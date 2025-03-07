@@ -70,7 +70,7 @@ export const Report = () => {
                   PlayerStats={stats}
                   {...replay.data.properties}
                 />
-            ) : null}
+              )}
             {stats !== undefined ? (
                 <div className="flex flex-wrap place-content-center gap-10">
                     <Graph key="Player Scores" title="Player Scores" defaultMax={1000} valFn={(x) => x.Score} scores={stats} />
