@@ -1,5 +1,5 @@
 import { useAggregateStats, useReplays } from "../replay/replayStore";
-/*
+
 interface TeamStats {
   goals: number;
   shots: number;
@@ -56,101 +56,8 @@ const TeamStatsDisplay = ({
       </div>
     </div>
   </div>
-);*/
-import { Graph } from "./Graph";
-
-interface TeamStats {
-  goals: number;
-  shots: number;
-  saves: number;
-  assists: number;
-  demos: number;
-  score: number;
-  playerNames: string[];
-}
-
-const TeamStatsDisplay = ({
-  stats,
-  teamName,
-  rtl, // New prop for right-to-left layout
-}: {
-  stats: TeamStats;
-  teamName: string;
-  rtl?: boolean; // Optional prop
-}) => (
-  <div className={`rounded-lg bg-gray-50 p-6 dark:bg-gray-800 ${rtl ? "flex-row-reverse" : ""}`}>
-    <h3 className="mb-4 text-2xl font-bold">{teamName}</h3>
-    <div className="space-y-3">
-      <div>
-        <h4 className="text-lg font-semibold">Players</h4>
-        <p>{stats.playerNames.join(", ")}</p>
-      </div>
-      <div className={`grid grid-cols-2 gap-4 ${rtl ? "text-right" : ""}`}>
-        <div>
-          <h4 className="text-sm text-gray-600 dark:text-gray-400">Goals</h4>
-          <p className="text-xl font-bold">{stats.goals}</p>
-        </div>
-        <div>
-          <h4 className="text-sm text-gray-600 dark:text-gray-400">Assists</h4>
-          <p className="text-xl font-bold">{stats.assists}</p>
-        </div>
-        <div>
-          <h4 className="text-sm text-gray-600 dark:text-gray-400">Saves</h4>
-          <p className="text-xl font-bold">{stats.saves}</p>
-        </div>
-        <div>
-          <h4 className="text-sm text-gray-600 dark:text-gray-400">Shots</h4>
-          <p className="text-xl font-bold">{stats.shots}</p>
-        </div>        
-        <div>
-          <h4 className="text-sm text-gray-600 dark:text-gray-400">Demos</h4>
-          <p className="text-xl font-bold">{stats.demos}</p>
-        </div>
-      </div>
-      <div>
-        <h4 className="text-sm text-gray-600 dark:text-gray-400">
-          Average Score
-        </h4>
-        <p className="text-xl font-bold">
-          {Math.round(stats.score / stats.playerNames.length)}
-        </p>
-      </div>
-      <Graph
-        key="Player Goals"
-        title="Player Goals"
-        defaultMax={4}
-        valFn={(x) => x.Goals}
-        scores={stats.playerNames}
-        rtl={rtl}
-      />
-      <Graph
-        key="Player Assists"
-        title="Player Assists"
-        defaultMax={4}
-        valFn={(x) => x.Assists}
-        scores={stats.playerNames}
-        rtl={rtl}
-      />
-      <Graph
-        key="Player Saves"
-        title="Player Saves"
-        defaultMax={4}
-        valFn={(x) => x.Saves}
-        scores={stats.playerNames}
-        rtl={rtl}
-      />
-      <Graph
-        key="Player Shots"
-        title="Player Shots"
-        defaultMax={8}
-        valFn={(x) => x.Shots}
-        scores={stats.playerNames}
-        rtl={rtl}
-      />
-    </div>
-  </div>
 );
-export default TeamStatsDisplay;
+
 export const AggregateStats = () => {
   const stats = useAggregateStats();
   const replays = useReplays();
@@ -166,8 +73,6 @@ export const AggregateStats = () => {
           const team = player.Team === 0 ? "team0" : "team1";
           if (player.Score > 0 && !acc[team].playerNames.includes(player.Name)) {
             acc[team].playerNames.push(player.Name);
-          } else if (player.Score === 0 && !acc[team].playerNames.includes("Spectator")) {
-            acc[team].playerNames.push("Spectator");
           }
         });
 
@@ -224,7 +129,7 @@ export const AggregateStats = () => {
         score: 0,
         playerNames: [],
       },
-    }
+    },
   );
 
   return (
@@ -236,191 +141,9 @@ export const AggregateStats = () => {
         </p>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <TeamStatsDisplay stats={teamStats.team0} teamName="Blue Team" rtl={true} />
+        <TeamStatsDisplay stats={teamStats.team0} teamName="Blue Team" />
         <TeamStatsDisplay stats={teamStats.team1} teamName="Orange Team" />
       </div>
     </div>
   );
 };
-/*
-export const AggregateStats = () => {
-  const stats = useAggregateStats();
-  const replays = useReplays();
-
-  if (!stats || replays.length === 0) return null;
-
-  const teamStats = replays.reduce(
-    (acc: { team0: TeamStats; team1: TeamStats }, replay) => {
-      const players = replay.data.properties.PlayerStats;
-
-      if (players) {
-        players.forEach((player) => {
-          const team = player.Team === 0 ? "team0" : "team1";
-          if (player.Score > 0 && !acc[team].playerNames.includes(player.Name)) {
-            acc[team].playerNames.push(player.Name);
-          }
-        });
-
-        const gameStats = {
-          team0: { goals: 0, shots: 0, saves: 0, assists: 0, demos: 0, score: 0 },
-          team1: { goals: 0, shots: 0, saves: 0, assists: 0, demos: 0, score: 0 },
-        };
-
-        players.forEach((player) => {
-          const team = player.Team === 0 ? "team0" : "team1";
-          if (player.Score > 0) {
-            gameStats[team].goals += player.Goals;
-            gameStats[team].shots += player.Shots;
-            gameStats[team].saves += player.Saves;
-            gameStats[team].assists += player.Assists;
-            gameStats[team].demos += player.DemolishFx;
-            gameStats[team].score += player.Score;
-          }
-        });
-
-        acc.team0.goals += gameStats.team0.goals;
-        acc.team0.shots += gameStats.team0.shots;
-        acc.team0.saves += gameStats.team0.saves;
-        acc.team0.assists += gameStats.team0.assists;
-        acc.team0.demos += gameStats.team0.demos;
-        acc.team0.score += gameStats.team0.score;
-
-        acc.team1.goals += gameStats.team1.goals;
-        acc.team1.shots += gameStats.team1.shots;
-        acc.team1.saves += gameStats.team1.saves;
-        acc.team1.assists += gameStats.team1.assists;
-        acc.team1.demos += gameStats.team1.demos;
-        acc.team1.score += gameStats.team1.score;
-      }
-
-      return acc;
-    },
-    {
-      team0: {
-        goals: 0,
-        shots: 0,
-        saves: 0,
-        assists: 0,
-        demos: 0,
-        score: 0,
-        playerNames: [],
-      },
-      team1: {
-        goals: 0,
-        shots: 0,
-        saves: 0,
-        assists: 0,
-        demos: 0,
-        score: 0,
-        playerNames: [],
-      },
-    },
-  );
-
-  return (
-    <div className="mt-8 flex flex-col space-y-6">
-      <div className="text-center">
-        <h2 className="mb-4 text-3xl font-semibold">Series Statistics</h2>
-        <p className="text-xl text-gray-600 dark:text-gray-400">
-          {stats.totalGames} Games Played • {stats.winPercentage}% Win Rate
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <TeamStatsDisplay stats={teamStats.team0} teamName="Blue Team" />
-        <TeamStatsDisplay stats={teamStats.team1} teamName="Orange Team" />
-      </div>
-    </div>
-  );
-};*/
-/*export const AggregateStats = () => {
-  const stats = useAggregateStats();
-  const replays = useReplays();
-
-  if (!stats || replays.length === 0) return null;
-
-  // Calculate team statistics across all games
-  const teamStats = replays.reduce(
-    (acc: { team0: TeamStats; team1: TeamStats }, replay) => {
-      const players = replay.data.properties.PlayerStats;
-
-      if (players) {
-        // First, update the player rosters for each team to include all players
-        players.forEach((player) => {
-          const team = player.Team === 0 ? "team0" : "team1";
-          if (!acc[team].playerNames.includes(player.Name)) {
-            acc[team].playerNames.push(player.Name);
-          }
-        });
-
-        // Initialize the game stats
-        const gameStats = {
-          team0: { goals: 0, shots: 0, saves: 0, assists: 0, demos: 0, score: 0 },
-          team1: { goals: 0, shots: 0, saves: 0, assists: 0, demos: 0, score: 0 },
-        };
-
-        // Sum up stats for each team in this game
-        players.forEach((player) => {
-          const team = player.Team === 0 ? "team0" : "team1";
-          gameStats[team].goals += player.Goals;
-          gameStats[team].shots += player.Shots;
-          gameStats[team].saves += player.Saves;
-          gameStats[team].assists += player.Assists;
-          gameStats[team].demos += player.DemolishFx;
-          gameStats[team].score += player.Score;
-        });
-
-        // Add this game's stats to the totals
-        acc.team0.goals += gameStats.team0.goals;
-        acc.team0.shots += gameStats.team0.shots;
-        acc.team0.saves += gameStats.team0.saves;
-        acc.team0.assists += gameStats.team0.assists;
-        acc.team0.demos += gameStats.team0.demos;
-        acc.team0.score += gameStats.team0.score;
-
-        acc.team1.goals += gameStats.team1.goals;
-        acc.team1.shots += gameStats.team1.shots;
-        acc.team1.saves += gameStats.team1.saves;
-        acc.team1.assists += gameStats.team1.assists;
-        acc.team1.demos += gameStats.team1.demos;
-        acc.team1.score += gameStats.team1.score;
-      }
-
-      return acc;
-    },
-    {
-      team0: {
-        goals: 0,
-        shots: 0,
-        saves: 0,
-        assists: 0,
-        demos: 0,
-        score: 0,
-        playerNames: [],
-      },
-      team1: {
-        goals: 0,
-        shots: 0,
-        saves: 0,
-        assists: 0,
-        demos: 0,
-        score: 0,
-        playerNames: [],
-      },
-    },
-  );
-
-  return (
-    <div className="mt-8 flex flex-col space-y-6">
-      <div className="text-center">
-        <h2 className="mb-4 text-3xl font-semibold">Series Statistics</h2>
-        <p className="text-xl text-gray-600 dark:text-gray-400">
-          {stats.totalGames} Games Played • {stats.winPercentage}% Win Rate
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <TeamStatsDisplay stats={teamStats.team0} teamName="Blue Team" />
-        <TeamStatsDisplay stats={teamStats.team1} teamName="Orange Team" />
-      </div>
-    </div>
-  );
-};*/
