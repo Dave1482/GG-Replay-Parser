@@ -1,9 +1,8 @@
 import { ParseMode } from "@/stores/uiStore";
 import { create } from "zustand";
-import { ParsedReplay, Replay } from "../worker";
+import { ParsedReplay, ParseInput, Replay } from "../worker";
 import { ReplayAnalyzer } from "./ReplayAnalyzer";
 import { DemolitionEvent } from "./useReplayAnalyzer";
-import { ParseInput } from "../worker/types";
 
 class ReplayInput {
   constructor(public readonly input: ParseInput) {}
