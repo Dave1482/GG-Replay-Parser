@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { ParsedReplay, Replay, ParseInput } from "../worker"; // Import ParseInput from ../worker
 import { ReplayAnalyzer } from "./ReplayAnalyzer";
 import { DemolitionEvent } from "./useReplayAnalyzer"; // Import DemolitionEvent
-import { ReplayInput } from "./ReplayInput"; // Import ReplayInput
+import { ReplayInputHelper } from "./ReplayInput"; // Import ReplayInput
 
 interface ParseRequest {
   input: ParseInput | File; // Update to handle both ParseInput and File objects
