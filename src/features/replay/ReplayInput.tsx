@@ -8,6 +8,25 @@ import { FileInput } from "@/components/FileInput";
 import { useSession } from "next-auth/react";
 import { ParseInput } from "../worker"; 
 
+export class ReplayInput {
+  constructor(public readonly input: ParseInput | File) {}
+
+  path = () => {
+    if (this.input instanceof File) {
+      return this.input.name; // Use the 'name' property of the File object
+    } else {
+      return this.input.filename; // Use the 'filename' property of ParseInput
+    }
+  };
+
+  name = () => {
+    const path = this.path();
+    return path.slice(path.lastIndexOf("/") + 1);
+  };
+
+  jsonName = () => this.name().replace(".replay", ".json");
+}
+
 export const ReplayInput = () => {
   const busyWorker = useIsActionInFlight();
   const { mutate } = useFilePublisher();
