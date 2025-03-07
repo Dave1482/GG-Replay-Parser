@@ -6,6 +6,7 @@ import { useIsActionInFlight } from "@/hooks";
 import { DocumentIcon } from "@/components/icons/DocumentIcon";
 import { FileInput } from "@/components/FileInput";
 import { useSession } from "next-auth/react";
+import { ParseInput } from "../worker/types"; 
 
 export const ReplayInput = () => {
   const busyWorker = useIsActionInFlight();
@@ -20,11 +21,7 @@ export const ReplayInput = () => {
   return (
     <div className="mx-auto w-full max-w-prose flex-col space-y-1">
       <DropOverlay onFile={mutate} enabled={!busyWorker} />
-
-      <FileInput
-        disabled={busyWorker || status !== "authenticated"}
-        onChange={mutate}
-      >
+      <FileInput disabled={busyWorker || status !== "authenticated"} onChange={mutate}>
         <DocumentIcon className="w-10" />
         <p>
           Drag and drop or{" "}
