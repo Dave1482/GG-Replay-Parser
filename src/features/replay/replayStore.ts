@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { ParsedReplay, Replay } from "../worker";
 import { ReplayAnalyzer } from "./ReplayAnalyzer";
 import { DemolitionEvent } from "./useReplayAnalyzer";
-import { ParseInput } from "./types";
+import { ParseInput } from "../worker/types";
 
 class ReplayInput {
   constructor(public readonly input: ParseInput) {}
