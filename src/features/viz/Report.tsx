@@ -35,7 +35,13 @@ export const Report = () => {
                     <h2 className="mb-1 text-2xl font-semibold">Series Total</h2>
                     <h3 className="text-2xl">Score:</h3>
                 </div>
-                <TeamScores team0score={team0Wins} team1score={team1Wins} currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                <TeamScores
+                    team0score={team0Wins}
+                    team1score={team1Wins}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
                 <AggregateStats />
             </div>
         );
@@ -51,7 +57,13 @@ export const Report = () => {
                 <h2 className="mb-1 text-2xl font-semibold">{replay.input.name()}</h2>
                 <h3 className="text-2xl">Score:</h3>
             </div>
-            <TeamScores team0score={replay.data.properties.Team0Score} team1score={replay.data.properties.Team1Score} currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            <TeamScores
+                team0score={replay.data.properties.Team0Score}
+                team1score={replay.data.properties.Team1Score}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            />
             <DownloadReplayJson replay={replay} />
             {stats !== undefined ? (
                 <Description gameType={replay.data.game_type} PlayerStats={stats} {...replay.data.properties} />
@@ -79,5 +91,4 @@ export const Report = () => {
         </div>
     );
 };
-
   // Adjust the replay index based on whether we're showing aggregate stats
