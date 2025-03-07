@@ -4,16 +4,15 @@ import { Description } from "./Description";
 import { TeamScores } from "./TeamScores";
 import { DownloadReplayJson } from "./DownloadReplayJson";
 import { AggregateStats } from "./AggregateStats";
-import { useReplays } from "../replay/replayStore";
-import { useAggregateStats } from "../replay/replayStore";
-import { useReplayAnalyzer } from "../replay/useReplayAnalyzer"; // Import the hook
+import { useReplays, useAggregateStats } from "../replay/replayStore";
+import { useReplayAnalyzer } from "../replay/useReplayAnalyzer";
 
 export const Report = () => {
     const replays = useReplays();
     const [currentPage, setCurrentPage] = useState(1); // Always start at first replay uploaded
     const allStats = useAggregateStats();
     const { analyzeFile, busy, demolitionEvents } = useReplayAnalyzer(); // Use the hook
-
+    
     if (replays.length === 0) {
         return null;
     }
@@ -95,16 +94,20 @@ export const Report = () => {
                     </ul>
                 </div>
             ) : null}
-            {demolitionEvents.length > 0 && (
-                <div className="mt-8">
-                    <h3 className="text-xl font-semibold">Demolition Events:</h3>
-                    <ul>
-                        {demolitionEvents.map((event, index) => (
-                            <li key={index}>{event.attackerName} -&gt; {event.victimName} (Frame: {event.frameNumber})</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+            <h3 className="text-xl font-semibold">Demolition Events:</h3>
+              {replay.demolitionEvents && (
+                <ul>
+                  {replay.demolitionEvents.map((event, i) => (
+                    <div key={i}>
+                      <p>Attacker: {event.attackerName}</p>
+                      <p>Victim: {event.victimName}</p>
+                      <p>Frame: {event.frameNumber}</p>
+                    </div>
+                  ))}
+                </ul>
+              )}
         </div>
     );
 };
+
+export default Report;
