@@ -72,4 +72,48 @@ export const Report = () => {
         <Description
           gameType={replay.data.game_type}
           PlayerStats={stats}
-          {...
+          {...replay.data.properties}
+        />
+      ) : null}
+      {stats !== undefined ? (
+        <div className="flex flex-wrap place-content-center gap-10">
+          <Graph
+            key="Player Scores"
+            title="Player Scores"
+            defaultMax={1000}
+            valFn={(x) => x.Score}
+            scores={stats}
+          />
+          <Graph
+            key="Player Goals"
+            title="Player Goals"
+            defaultMax={4}
+            valFn={(x) => x.Goals}
+            scores={stats}
+          />
+          <Graph
+            key="Player Assists"
+            title="Player Assists"
+            defaultMax={4}
+            valFn={(x) => x.Assists}
+            scores={stats}
+          />
+          <Graph
+            key="Player Saves"
+            title="Player Saves"
+            defaultMax={4}
+            valFn={(x) => x.Saves}
+            scores={stats}
+          />
+          <Graph
+            key="Player Shots"
+            title="Player Shots"
+            defaultMax={8}
+            valFn={(x) => x.Shots}
+            scores={stats}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+};
