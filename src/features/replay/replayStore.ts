@@ -50,13 +50,13 @@ interface ReplayStore {
 }
 
 const useReplayStore = create<ReplayStore>()((set) => ({
-  latest: { kind: "initial", input: new ReplayInput({ filename: "placeholder.replay", data: "" }) }, // Provide necessary parameters
+  latest: { kind: "initial", input: new ReplayInputHelper({ filename: "placeholder.replay", data: "" }) }, // Provide necessary parameters
   replays: [],
   aggregateStats: null,
   actions: {
     parseError: (error, { input }) =>
       set(() => ({
-        latest: { kind: "error", error, input: new ReplayInput(input) },
+        latest: { kind: "error", error, input: new ReplayInputHelper(input) },
       })),
     parsed: ({ replay, ...rest }, mode, { input }) => {
       set((state) => {
@@ -68,7 +68,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           data: replay,
           ...rest,
           mode,
-          input: new ReplayInput(input),
+          input: new ReplayInputHelper(input),
           demolitionEvents: [], // Initialize the demolition events array
         };
 
@@ -76,7 +76,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
         const aggregateStats = calculateAggregateStats(updatedReplays);
 
         return {
-          latest: { kind: "success", input: new ReplayInput(input) },
+          latest: { kind: "success", input: new ReplayInputHelper(input) },
           replays: updatedReplays,
           aggregateStats,
         };
