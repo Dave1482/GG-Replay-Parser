@@ -1,0 +1,33 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  PLAYER
+  CAPTAIN
+  ADMIN
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  discordId  String    @unique
+  username   String
+  avatarUrl  String?
+  role       Role      @default(USER)
+  createdAt  DateTime  @default(now())
+  replays    Replay[]
+}
+
+model Replay {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  data      Json
+  createdAt DateTime @default(now())
+}
