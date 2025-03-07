@@ -7,46 +7,45 @@ import { AggregateStats } from "./AggregateStats";
 import { useReplays, useAggregateStats } from "../replay/replayStore"; // Updated imports
 
 export const Report = () => {
-    const replays = useReplays();
-    const [currentPage, setCurrentPage] = useState(1); // Always start at first replay uploaded
-    const allStats = useAggregateStats();
+  const replays = useReplays();
+  const [currentPage, setCurrentPage] = useState(1); // Always start at first replay uploaded
+  const aggregateStats = useAggregateStats();
 
-    if (replays.length === 0) {
-        return <div>No replays available</div>;
-    }
+  if (replays.length === 0) {
+    return <div>No replays available</div>;
+  }
 
-    const team0Wins = allStats?.team0Wins;
-    const team1Wins = allStats?.team1Wins;
-    const totalPages = replays.length > 1 ? replays.length + 1 : 1;
+  const team0Wins = aggregateStats?.team0Wins;
+  const team1Wins = aggregateStats?.team1Wins;
+  const totalPages = replays.length > 1 ? replays.length + 1 : 1;
 
-    if (currentPage === 1 && replays.length > 1) {
-        const totalTeamGoals = replays.reduce(
-            (acc, replay) => {
-                acc.team0 += replay.data.properties.Team0Score || 0;
-                acc.team1 += replay.data.properties.Team1Score || 0;
-                return acc;
-            },
-            { team0: 0, team1: 0 }
-        );
+  if (currentPage === 1 && replays.length > 1) {
+    const totalTeamGoals = replays.reduce(
+      (acc, replay) => {
+        acc.team0 += replay.data.properties.Team0Score || 0;
+        acc.team1 += replay.data.properties.Team1Score || 0;
+        return acc;
+      },
+      { team0: 0, team1: 0 }
+    );
 
-        return (
-            <div className="mt-8 flex flex-col space-y-6">
-                <div className="text-center">
-                    <h2 className="mb-1 text-2xl font-semibold">Series Total</h2>
-                    <h3 className="text-2xl">Score:</h3>
-                </div>
-                <TeamScores
-                    team0score={team0Wins}
-                    team1score={team1Wins}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
-                <AggregateStats />
-            </div>
-        );
-    }
-
+    return (
+      <div className="mt-8 flex flex-col space-y-6">
+        <div className="text-center">
+          <h2 className="mb-1 text-2xl font-semibold">Series Total</h2>
+          <h3 className="text-2xl">Score:</h3>
+        </div>
+        <TeamScores
+          team0score={team0Wins}
+          team1score={team1Wins}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+        <AggregateStats />
+      </div>
+    );
+  }
     const replayIndex = replays.length > 1 ? currentPage - 2 : currentPage - 1;
     const replay = replays[replayIndex];
     const stats = replay.data.properties.PlayerStats;
