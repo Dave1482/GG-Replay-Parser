@@ -1,6 +1,7 @@
 import { ParseMode } from "@/stores/uiStore";
 import { create } from "zustand";
 import { ParsedReplay, ParseInput, Replay } from "../worker";
+import { ReplayAnalyzer } from "./ReplayAnalyzer";
 
 class ReplayInput {
   constructor(public readonly input: ParseInput) {}
@@ -62,6 +63,7 @@ interface ReplayStore {
     parseError: (error: unknown, req: ParseRequest) => void;
     parsed: (data: ParsedReplay, mode: ParseMode, req: ParseRequest) => void;
     clearReplays: () => void;
+    analyzeReplay: (content: string) => void; // Added this line for ReplayAnalyzer
   };
 }
 
@@ -99,6 +101,11 @@ const useReplayStore = create<ReplayStore>()((set) => ({
       });
     },
     clearReplays: () => set(() => ({ replays: [], aggregateStats: null })),
+    analyzeReplay: (content: string) => { // Added this method for ReplayAnalyzer
+      const analyzer = new ReplayAnalyzer();
+      analyzer.analyzeReplayContent(content);
+      const events = analyzer.findDemolitions(JSON.parse(content));
+      console.log("Demolition events:", events); 
   },
 }));
 
