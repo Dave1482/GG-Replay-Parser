@@ -6,7 +6,7 @@ import { useIsActionInFlight } from "@/hooks";
 import { DocumentIcon } from "@/components/icons/DocumentIcon";
 import { FileInput } from "@/components/FileInput";
 import { useSession } from "next-auth/react";
-import { ParseInput } from "../worker"; 
+import { ParseInput } from "../worker"; // Import ParseInput from ../worker
 
 export class ReplayInput {
   constructor(public readonly input: ParseInput | File) {}
@@ -25,8 +25,8 @@ export class ReplayInput {
   };
 
   jsonName = () => this.name().replace(".replay", ".json");
-}
 
+}
 export const ReplayInput = () => {
   const busyWorker = useIsActionInFlight();
   const { mutate } = useFilePublisher();
