@@ -1,6 +1,6 @@
 import { ParseMode } from "@/stores/uiStore";
 import { create } from "zustand";
-import { ParsedReplay, Replay, ParseInput } from "../worker"; // Import ParseInput from ../worker
+import { ParsedReplay, Replay, ParseInputHelper } from "../worker"; // Import ParseInput from ../worker
 import { ReplayAnalyzer } from "./ReplayAnalyzer";
 import { DemolitionEvent } from "./useReplayAnalyzer"; // Import DemolitionEvent
 import { ReplayInputHelper } from "./ReplayInput"; // Import ReplayInput
