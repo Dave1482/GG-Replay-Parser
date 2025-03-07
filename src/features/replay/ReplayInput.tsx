@@ -8,24 +8,28 @@ import { FileInput } from "@/components/FileInput";
 import { useSession } from "next-auth/react";
 import { ParseInput } from "../worker"; // Import ParseInput from ../worker
 
-export class ReplayInputHelper  {
+export class ReplayInputHelper {
   constructor(public readonly input: ParseInput | File) {}
 
   path = () => {
     if (this.input instanceof File) {
       return this.input.name; // Use the 'name' property of the File object
     } else {
-      return this.input.filename; // Use the 'filename' property of ParseInput
+      // Check and handle the type of input to derive the filename accordingly
+      if (typeof this.input === 'object' && 'someProperty' in this.input) {
+        return this.input.someProperty; // Replace 'someProperty' with the actual property name
+      } else {
+        throw new Error('Unsupported input type');
+      }
     }
   };
 
   name = () => {
     const path = this.path();
-    return path.slice(path.lastIndexOf("/") + 1);
+    return path.slice(path.lastIndexOf('/') + 1);
   };
 
-  jsonName = () => this.name().replace(".replay", ".json");
-
+  jsonName = () => this.name().replace('.replay', '.json');
 }
 export const ReplayInput = () => {
   const busyWorker = useIsActionInFlight();
