@@ -119,4 +119,18 @@ export class ReplayAnalyzer {
             console.error("Error analyzing replay content:", error);
         }
     }
+
+    getDemolitionEvents(content: string): any[] {
+        try {
+            const replayData = JSON.parse(content);
+            this.exploreJsonStructure(replayData);
+            this.buildActorMappings(replayData);
+            const demolitionEvents = this.findDemolitions(replayData);
+            return demolitionEvents;
+        } catch (error) {
+            console.error("Error analyzing replay content:", error);
+            return [];
+        }
+    }
+}
 }
