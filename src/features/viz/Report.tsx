@@ -4,17 +4,15 @@ import { Description } from "./Description";
 import { TeamScores } from "./TeamScores";
 import { DownloadReplayJson } from "./DownloadReplayJson";
 import { AggregateStats } from "./AggregateStats";
-import { useReplays, useAggregateStats } from "../replay/replayStore";
-import { useReplayAnalyzer } from "../replay/useReplayAnalyzer";
+import { useReplays, useAggregateStats } from "../replay/replayStore"; // Updated imports
 
 export const Report = () => {
     const replays = useReplays();
     const [currentPage, setCurrentPage] = useState(1); // Always start at first replay uploaded
     const allStats = useAggregateStats();
-    const [analyzeFile, busy, demolitionEvents] = useReplayAnalyzer(); // Use the hook
-    
+
     if (replays.length === 0) {
-        return null;
+        return <div>No replays available</div>;
     }
 
     const team0Wins = allStats?.team0Wins;
@@ -22,11 +20,14 @@ export const Report = () => {
     const totalPages = replays.length > 1 ? replays.length + 1 : 1;
 
     if (currentPage === 1 && replays.length > 1) {
-        const totalTeamGoals = replays.reduce((acc, replay) => {
-            acc.team0 += replay.data.properties.Team0Score || 0;
-            acc.team1 += replay.data.properties.Team1Score || 0;
-            return acc;
-        }, { team0: 0, team1: 0 });
+        const totalTeamGoals = replays.reduce(
+            (acc, replay) => {
+                acc.team0 += replay.data.properties.Team0Score || 0;
+                acc.team1 += replay.data.properties.Team1Score || 0;
+                return acc;
+            },
+            { team0: 0, team1: 0 }
+        );
 
         return (
             <div className="mt-8 flex flex-col space-y-6">
@@ -64,14 +65,14 @@ export const Report = () => {
                 onPageChange={setCurrentPage}
             />
             <DownloadReplayJson replay={replay} />
-              {stats !== undefined && (
+            {stats !== undefined && (
                 <Description
-                  gameType={replay.data.game_type}
-                  PlayerStats={stats}
-                  {...replay.data.properties}
+                    gameType={replay.data.game_type}
+                    PlayerStats={stats}
+                    {...replay.data.properties}
                 />
-              )}
-            {stats !== undefined ? (
+            )}
+            {stats !== undefined && (
                 <div className="flex flex-wrap place-content-center gap-10">
                     <Graph key="Player Scores" title="Player Scores" defaultMax={1000} valFn={(x) => x.Score} scores={stats} />
                     <Graph key="Player Goals" title="Player Goals" defaultMax={4} valFn={(x) => x.Goals} scores={stats} />
@@ -80,38 +81,22 @@ export const Report = () => {
                     <Graph key="Player Shots" title="Player Shots" defaultMax={8} valFn={(x) => x.Shots} scores={stats} />
                     <Graph key="Player Demos" title="Player Demos" defaultMax={8} valFn={(x) => x.Demos} scores={stats} />
                     <Graph key="Player DemolishFx" title="Player DemolishFx" defaultMax={8} valFn={(x) => x.DemolishFx} scores={stats} />
-                    <h3 className="text-xl font-semibold">Demolition Events:</h3>
-                    
-                    <ul>
-                        {replays.map((replay, index) => (
-                          <li key={index}>
-                            <strong>Replay {index + 1}:</strong>
-                            {replay.demolitionEvents.map((event, i) => (
-                              <div key={i}>
-                                <p>Attacker: {event.attackerName}</p>
-                                <p>Victim: {event.victimName}</p>
-                                <p>Frame: {event.frameNumber}</p>
-                              </div>
-                            ))}
-                          </li>
-                        ))}
-                    </ul>
                 </div>
-            ) : null}
+            )}
             <h3 className="text-xl font-semibold">Demolition Events:</h3>
-              {replay.demolitionEvents && replay.demolitionEvents.length > 0 ? (
+            {replay.demolitionEvents && replay.demolitionEvents.length > 0 ? (
                 <ul>
-                  {replay.demolitionEvents.map((event, i) => (
-                    <div key={i}>
-                      <p>Attacker: {event.attackerName}</p>
-                      <p>Victim: {event.victimName}</p>
-                      <p>Frame: {event.frameNumber}</p>
-                    </div>
-                  ))}
+                    {replay.demolitionEvents.map((event, i) => (
+                        <div key={i}>
+                            <p>Attacker: {event.attackerName}</p>
+                            <p>Victim: {event.victimName}</p>
+                            <p>Frame: {event.frameNumber}</p>
+                        </div>
+                    ))}
                 </ul>
-              ) : (
+            ) : (
                 <p>No demolition events found.</p>
-              )}
+            )}
         </div>
     );
 };
