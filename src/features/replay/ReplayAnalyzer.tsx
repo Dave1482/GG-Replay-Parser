@@ -1,4 +1,5 @@
 import fs from "fs";
+import { DemolitionEvent } from "./useReplayAnalyzer";
 
 export class ReplayAnalyzer {
     private actorToPlayer: Record<string, string> = {};
@@ -49,7 +50,7 @@ export class ReplayAnalyzer {
     }
 
     findDemolitions(replayData: any): DemolitionEvent[] {
-        const demolitionEvents: any[] = [];
+        const demolitionEvents: DemolitionEvent[] = [];
         const frames = replayData?.network_frames?.frames || [];
         console.log(`\nAnalyzing ${frames.length} frames for demolitions...`);
         frames.forEach((frame: any, frameIdx: number) => {
@@ -82,7 +83,7 @@ export class ReplayAnalyzer {
                 });
             });
         });
-        return replayData.demolitionEvents || [];
+        return demolitionEvents || [];
     }
 
     printDemolitionSummary(events: DemolitionEvent[]) {
