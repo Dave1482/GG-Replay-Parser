@@ -83,7 +83,7 @@ export const Report = () => {
                     <h3 className="text-xl font-semibold">Demolition Events:</h3>
                     <ul>
                         {demolitionEvents.map((event, index) => (
-                            <li key={index}>{event.attackerName} -> {event.victimName} (Frame: {event.frameNumber})</li>
+                            <li key={index}>{event.attackerName} -&gt; {event.victimName} (Frame: {event.frameNumber})</li>
                         ))}
                     </ul>
                 </div>
@@ -91,4 +91,3 @@ export const Report = () => {
         </div>
     );
 };
-  // Adjust the replay index based on whether we're showing aggregate stats
