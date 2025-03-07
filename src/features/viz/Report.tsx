@@ -6,7 +6,7 @@ import { DownloadReplayJson } from "./DownloadReplayJson";
 import { AggregateStats } from "./AggregateStats";
 import { useReplays } from "../replay/replayStore";
 import { useAggregateStats } from "../replay/replayStore";
-import { useReplayAnalyzer } from "./useReplayAnalyzer"; // Import the hook
+import { useReplayAnalyzer } from "../replay/useReplayAnalyzer"; // Import the hook
 
 export const Report = () => {
     const replays = useReplays();
