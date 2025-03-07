@@ -80,10 +80,17 @@ export const Report = () => {
                     <h3 className="text-xl font-semibold">Demolition Events:</h3>
                     
                     <ul>
-                        {demolitionEvents.map((event, index) => (
-                            <li key={index}>
-                            {event.attackerName} -&gt; {event.victimName} (Frame: {event.frameNumber})
-                            </li>
+                        {replays.map((replay, index) => (
+                          <li key={index}>
+                            <strong>Replay {index + 1}:</strong>
+                            {replay.demolitionEvents.map((event, i) => (
+                              <div key={i}>
+                                <p>Attacker: {event.attackerName}</p>
+                                <p>Victim: {event.victimName}</p>
+                                <p>Frame: {event.frameNumber}</p>
+                              </div>
+                            ))}
+                          </li>
                         ))}
                     </ul>
                 </div>
