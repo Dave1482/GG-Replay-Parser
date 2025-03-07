@@ -90,6 +90,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           ...rest,
           mode,
           input: new ReplayInput(input),
+          demolitionEvents: [], // Ensure to initialize the demolition events array
         };
 
         const updatedReplays = [...state.replays, newReplay];
@@ -103,11 +104,23 @@ const useReplayStore = create<ReplayStore>()((set) => ({
       });
     },
     clearReplays: () => set(() => ({ replays: [], aggregateStats: null })),
-    analyzeReplay: (content: string) => { // Added this method for ReplayAnalyzer
+    analyzeReplay: (content: string) => {
       const analyzer = new ReplayAnalyzer();
       analyzer.analyzeReplayContent(content);
       const events = analyzer.findDemolitions(JSON.parse(content));
-      console.log("Demolition events:", events); 
+      console.log("Demolition events:", events);
+      
+      set((state) => ({
+        replays: state.replays.map((replay, index) => {
+          if (index === state.replays.length - 1) {
+            return {
+              ...replay,
+              demolitionEvents: events, // Update the replay with demolition events
+            };
+          }
+          return replay;
+        }),
+      }));
     },
   },
 }));
