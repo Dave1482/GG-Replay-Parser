@@ -8,7 +8,7 @@ import { FileInput } from "@/components/FileInput";
 import { useSession } from "next-auth/react";
 import { ParseInput } from "../worker"; // Import ParseInput from ../worker
 
-export class ReplayInput {
+export class ReplayInputHelper  {
   constructor(public readonly input: ParseInput | File) {}
 
   path = () => {
