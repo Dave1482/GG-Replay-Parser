@@ -70,7 +70,7 @@ interface ReplayStore {
 }
 
 const useReplayStore = create<ReplayStore>()((set) => ({
-  latest: { kind: "initial" },
+  latest: { kind: "initial", input: new ReplayInput({}) },
   replays: [],
   aggregateStats: null,
   actions: {
@@ -80,7 +80,6 @@ const useReplayStore = create<ReplayStore>()((set) => ({
       })),
     parsed: ({ replay, ...rest }, mode, { input }) => {
       set((state) => {
-        // Limit to 7 replays
         if (state.replays.length >= 7) {
           return state;
         }
@@ -90,7 +89,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           ...rest,
           mode,
           input: new ReplayInput(input),
-          demolitionEvents: [], // Ensure to initialize the demolition events array
+          demolitionEvents: [], // Initialize the demolition events array
         };
 
         const updatedReplays = [...state.replays, newReplay];
@@ -109,7 +108,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
       analyzer.analyzeReplayContent(content);
       const events = analyzer.findDemolitions(JSON.parse(content));
       console.log("Demolition events:", events);
-      
+
       set((state) => ({
         replays: state.replays.map((replay, index) => {
           if (index === state.replays.length - 1) {
