@@ -48,7 +48,7 @@ export class ReplayAnalyzer {
         console.log(`Found ${Object.keys(this.actorToPlayer).length} player mappings`);
     }
 
-    findDemolitions(replayData: any): any[] {
+    findDemolitions(replayData: any): DemolitionEvent[] {
         const demolitionEvents: any[] = [];
         const frames = replayData?.network_frames?.frames || [];
         console.log(`\nAnalyzing ${frames.length} frames for demolitions...`);
@@ -82,10 +82,10 @@ export class ReplayAnalyzer {
                 });
             });
         });
-        return data.demolitionEvents || [];
+        return replayData.demolitionEvents || [];
     }
 
-    printDemolitionSummary(events: any[]): void {
+    printDemolitionSummary(events: DemolitionEvent[]) {
         if (events.length === 0) {
             console.log("\nNo demolitions found in this replay.");
             return;
