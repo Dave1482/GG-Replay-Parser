@@ -10,7 +10,7 @@ interface ParseRequest {
 }
 
 interface ParseArg {
-  input: ReplayInput;
+  input: ReplayInputHelper;
 }
 
 type ParseResult =
