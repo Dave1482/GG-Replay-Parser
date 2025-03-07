@@ -82,7 +82,7 @@ export class ReplayAnalyzer {
                 });
             });
         });
-        return demolitionEvents;
+        return data.demolitionEvents || [];
     }
 
     printDemolitionSummary(events: any[]): void {
@@ -108,17 +108,18 @@ export class ReplayAnalyzer {
             });
     }
 
-    analyzeReplayContent(content: string): void {
+    analyzeReplayContent(content: string) {
         try {
-            const replayData = JSON.parse(content);
-            this.exploreJsonStructure(replayData);
-            this.buildActorMappings(replayData);
-            const demolitionEvents = this.findDemolitions(replayData);
-            this.printDemolitionSummary(demolitionEvents);
+          const replayData = JSON.parse(content);
+          this.exploreJsonStructure(replayData);
+          this.buildActorMappings(replayData);
+          const demolitionEvents = this.findDemolitions(replayData);
+          this.printDemolitionSummary(demolitionEvents);
         } catch (error) {
-            console.error("Error analyzing replay content:", error);
+          console.error("Error analyzing replay content:", error);
         }
     }
+  
 
     getDemolitionEvents(content: string): any[] {
         try {
