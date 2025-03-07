@@ -3,28 +3,10 @@ import { create } from "zustand";
 import { ParsedReplay, Replay, ParseInput } from "../worker"; // Import ParseInput from ../worker
 import { ReplayAnalyzer } from "./ReplayAnalyzer";
 import { DemolitionEvent } from "./useReplayAnalyzer"; // Import DemolitionEvent
-
-class ReplayInput {
-  constructor(public readonly input: ParseInput) {}
-
-  path = () => {
-    if (typeof this.input === "string") {
-      return this.input;
-    } else {
-      return this.input.filename;
-    }
-  };
-
-  name = () => {
-    const path = this.path();
-    return path.slice(path.lastIndexOf("/") + 1);
-  };
-
-  jsonName = () => this.name().replace(".replay", ".json");
-}
+import { ReplayInput } from "./ReplayInput"; // Import ReplayInput
 
 interface ParseRequest {
-  input: ParseInput;
+  input: ParseInput | File; // Update to handle both ParseInput and File objects
 }
 
 interface ParseArg {
