@@ -106,6 +106,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
       analyzer.analyzeReplayContent(content);
       const events = analyzer.findDemolitions(JSON.parse(content));
       console.log("Demolition events:", events); 
+    },
   },
 }));
 
