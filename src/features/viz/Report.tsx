@@ -46,58 +46,59 @@ export const Report = () => {
       </div>
     );
   }
-    const replayIndex = replays.length > 1 ? currentPage - 2 : currentPage - 1;
-    const replay = replays[replayIndex];
-    const stats = replay.data.properties.PlayerStats;
 
-    return (
-        <div className="mt-8 flex flex-col space-y-6">
-            <div className="text-center">
-                <h2 className="mb-1 text-2xl font-semibold">{replay.input.name()}</h2>
-                <h3 className="text-2xl">Score:</h3>
-            </div>
-            <TeamScores
-                team0score={replay.data.properties.Team0Score}
-                team1score={replay.data.properties.Team1Score}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-            />
-            <DownloadReplayJson replay={replay} />
-            {stats !== undefined && (
-                <Description
-                    gameType={replay.data.game_type}
-                    PlayerStats={stats}
-                    {...replay.data.properties}
-                />
-            )}
-            {stats !== undefined && (
-                <div className="flex flex-wrap place-content-center gap-10">
-                    <Graph key="Player Scores" title="Player Scores" defaultMax={1000} valFn={(x) => x.Score} scores={stats} />
-                    <Graph key="Player Goals" title="Player Goals" defaultMax={4} valFn={(x) => x.Goals} scores={stats} />
-                    <Graph key="Player Assists" title="Player Assists" defaultMax={4} valFn={(x) => x.Assists} scores={stats} />
-                    <Graph key="Player Saves" title="Player Saves" defaultMax={4} valFn={(x) => x.Saves} scores={stats} />
-                    <Graph key="Player Shots" title="Player Shots" defaultMax={8} valFn={(x) => x.Shots} scores={stats} />
-                    <Graph key="Player Demos" title="Player Demos" defaultMax={8} valFn={(x) => x.Demos} scores={stats} />
-                    <Graph key="Player DemolishFx" title="Player DemolishFx" defaultMax={8} valFn={(x) => x.DemolishFx} scores={stats} />
-                </div>
-            )}
-            <h3 className="text-xl font-semibold">Demolition Events:</h3>
-            {replay.demolitionEvents && replay.demolitionEvents.length > 0 ? (
-                <ul>
-                    {replay.demolitionEvents.map((event, i) => (
-                        <div key={i}>
-                            <p>Attacker: {event.attackerName}</p>
-                            <p>Victim: {event.victimName}</p>
-                            <p>Frame: {event.frameNumber}</p>
-                        </div>
-                    ))}
-                </ul>
-            ) : (
-                <p>No demolition events found.</p>
-            )}
+  const replayIndex = replays.length > 1 ? currentPage - 2 : currentPage - 1;
+  const replay = replays[replayIndex];
+  const stats = replay.data.properties.PlayerStats;
+
+  return (
+    <div className="mt-8 flex flex-col space-y-6">
+      <div className="text-center">
+        <h2 className="mb-1 text-2xl font-semibold">{replay.input.name()}</h2>
+        <h3 className="text-2xl">Score:</h3>
+      </div>
+      <TeamScores
+        team0score={replay.data.properties.Team0Score}
+        team1score={replay.data.properties.Team1Score}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+      <DownloadReplayJson replay={replay} />
+      {stats !== undefined && (
+        <Description
+          gameType={replay.data.game_type}
+          PlayerStats={stats}
+          {...replay.data.properties}
+        />
+      )}
+      {stats !== undefined && (
+        <div className="flex flex-wrap place-content-center gap-10">
+          <Graph key="Player Scores" title="Player Scores" defaultMax={1000} valFn={(x) => x.Score} scores={stats} />
+          <Graph key="Player Goals" title="Player Goals" defaultMax={4} valFn={(x) => x.Goals} scores={stats} />
+          <Graph key="Player Assists" title="Player Assists" defaultMax={4} valFn={(x) => x.Assists} scores={stats} />
+          <Graph key="Player Saves" title="Player Saves" defaultMax={4} valFn={(x) => x.Saves} scores={stats} />
+          <Graph key="Player Shots" title="Player Shots" defaultMax={8} valFn={(x) => x.Shots} scores={stats} />
+          <Graph key="Player Demos" title="Player Demos" defaultMax={8} valFn={(x) => x.Demos} scores={stats} />
+          <Graph key="Player DemolishFx" title="Player DemolishFx" defaultMax={8} valFn={(x) => x.DemolishFx} scores={stats} />
         </div>
-    );
+      )}
+      <h3 className="text-xl font-semibold">Demolition Events:</h3>
+      {replay.demolitionEvents && replay.demolitionEvents.length > 0 ? (
+        <ul>
+          {replay.demolitionEvents.map((event, i) => (
+            <div key={i}>
+              <p>Attacker: {event.attackerName}</p>
+              <p>Victim: {event.victimName}</p>
+              <p>Frame: {event.frameNumber}</p>
+            </div>
+          ))}
+        </ul>
+      ) : (
+        <p>No demolition events found.</p>
+      )}
+    </div>
+  );
 };
 
 export default Report;
