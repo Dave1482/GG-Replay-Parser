@@ -78,9 +78,12 @@ export const Report = () => {
                     <Graph key="Player Demos" title="Player Demos" defaultMax={8} valFn={(x) => x.Demos} scores={stats} />
                     <Graph key="Player DemolishFx" title="Player DemolishFx" defaultMax={8} valFn={(x) => x.DemolishFx} scores={stats} />
                     <h3 className="text-xl font-semibold">Demolition Events:</h3>
+                    
                     <ul>
                         {demolitionEvents.map((event, index) => (
-                            <li key={index}>{event.attackerName} -&gt; {event.victimName} (Frame: {event.frameNumber})</li>
+                            <li key={index}>
+                            {event.attackerName} -&gt; {event.victimName} (Frame: {event.frameNumber})
+                            </li>
                         ))}
                     </ul>
                 </div>
