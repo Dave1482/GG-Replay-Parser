@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react";
 import { ParseInputHelper } from "../worker"; // Import ParseInput from ../worker
 
 export class ReplayInputHelper {
-  constructor(public readonly input: ParseInput | File) {}
+  constructor(public readonly input: ParseInputHelper | File) {}
 
   path = () => {
     if (this.input instanceof File) {
