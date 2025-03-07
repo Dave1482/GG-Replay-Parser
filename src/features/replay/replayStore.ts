@@ -6,7 +6,7 @@ import { DemolitionEvent } from "./useReplayAnalyzer"; // Import DemolitionEvent
 import { ReplayInputHelper } from "./ReplayInput"; // Import ReplayInput
 
 interface ParseRequest {
-  input: ParseInput | File; // Update to handle both ParseInput and File objects
+  input: ParseInputHelper | File; // Update to handle both ParseInput and File objects
 }
 
 interface ParseArg {
