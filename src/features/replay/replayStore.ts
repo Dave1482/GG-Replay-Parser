@@ -102,8 +102,63 @@ const useReplayStore = create<ReplayStore>()((set) => ({
   },
 }));
 
-// Helper function to calculate aggregate stats
 const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
+    if (replays.length === 0) {
+        return {
+            totalGames: 0,
+            averageScore: 0,
+            totalGoals: 0,
+            winPercentage: 0,
+            team0Wins: 0,
+            team1Wins: 0,
+        };
+    }
+
+    let totalGoals = 0;
+    let totalScore = 0;
+    let wins = 0;
+    let team0Wins = 0;
+    let team1Wins = 0;
+
+    replays.forEach((replay) => {
+        const team0Score = replay.data.properties.Team0Score || 0;
+        const team1Score = replay.data.properties.Team1Score || 0;
+        totalGoals += team0Score + team1Score;
+
+        const playerStats = replay.data.properties.PlayerStats;
+
+        if (playerStats && playerStats.length > 0) {
+            const userStats = playerStats[0];
+            const userTeam = userStats.Team;
+
+            if (userTeam === 0 && team0Score > team1Score) wins++;
+            if (userTeam === 1 && team1Score > team0Score) wins++;
+
+            if (team0Score > team1Score) team0Wins++;
+            if (team1Score > team0Score) team1Wins++;
+
+            let gameTotal = 0;
+            playerStats.forEach((player) => {
+                if (player.Team === userTeam && player.Score > 0) {
+                    gameTotal += player.Score;
+                }
+            });
+            totalScore += gameTotal;
+        }
+    });
+
+    return {
+        totalGames: replays.length,
+        averageScore: Math.round(totalScore / replays.length),
+        totalGoals,
+        winPercentage: Math.round((wins / replays.length) * 100),
+        team0Wins: Math.round(team0Wins),
+        team1Wins: Math.round(team1Wins),
+    };
+};
+
+// Helper function to calculate aggregate stats
+/*const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
   if (replays.length === 0) {
     return {
       totalGames: 0,
@@ -157,7 +212,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
     team0Wins: Math.round(team0Wins),
     team1Wins: Math.round(team1Wins),
   };
-};
+};*/
 
 export const useReplayActions = () => useReplayStore((state) => state.actions);
 export const useLatestParse = () => useReplayStore((state) => state.latest);
