@@ -11,7 +11,7 @@ export const Report = () => {
     const replays = useReplays();
     const [currentPage, setCurrentPage] = useState(1); // Always start at first replay uploaded
     const allStats = useAggregateStats();
-    const { analyzeFile, busy, demolitionEvents } = useReplayAnalyzer(); // Use the hook
+    const [analyzeFile, busy, demolitionEvents] = useReplayAnalyzer(); // Use the hook
     
     if (replays.length === 0) {
         return null;
@@ -64,8 +64,12 @@ export const Report = () => {
                 onPageChange={setCurrentPage}
             />
             <DownloadReplayJson replay={replay} />
-            {stats !== undefined ? (
-                <Description gameType={replay.data.game_type} PlayerStats={stats} {...replay.data.properties} />
+              {stats !== undefined && (
+                <Description
+                  gameType={replay.data.game_type}
+                  PlayerStats={stats}
+                  {...replay.data.properties}
+                />
             ) : null}
             {stats !== undefined ? (
                 <div className="flex flex-wrap place-content-center gap-10">
@@ -106,8 +110,8 @@ export const Report = () => {
                   ))}
                 </ul>
               ) : (
-            <p>No demolition events found.</p>
-          )}
+                <p>No demolition events found.</p>
+              )}
         </div>
     );
 };
