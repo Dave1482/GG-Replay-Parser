@@ -1,9 +1,16 @@
 import { useState } from "react";
-import { ReplayAnalyzer } from "./ReplayAnalyzer"; // Make sure to adjust the path as needed
+import { ReplayAnalyzer } from "./ReplayAnalyzer"; // Update the path if necessary
+
+// Define a type for the demolition events
+type DemolitionEvent = {
+    attackerName: string;
+    victimName: string;
+    frameNumber: number;
+};
 
 export const useReplayAnalyzer = () => {
     const [busy, setBusy] = useState(false);
-    const [demolitionEvents, setDemolitionEvents] = useState([]);
+    const [demolitionEvents, setDemolitionEvents] = useState<DemolitionEvent[]>([]); // Explicitly type the state
 
     const analyzeFile = (file: File) => {
         setBusy(true);
@@ -13,7 +20,7 @@ export const useReplayAnalyzer = () => {
                 const content = reader.result as string;
                 const analyzer = new ReplayAnalyzer();
                 const events = analyzer.getDemolitionEvents(content);
-                setDemolitionEvents(events);
+                setDemolitionEvents(events); // Assign the events to the state
                 console.log("Replay analysis completed!");
             } catch (error) {
                 console.error("Error analyzing replay:", error);
@@ -26,6 +33,7 @@ export const useReplayAnalyzer = () => {
 
     return { analyzeFile, busy, demolitionEvents };
 };
+
 /*ReplayAnalyzer.prototype.analyzeReplayContent = function (content) {
     try {
         const replayData = JSON.parse(content);
