@@ -16,8 +16,8 @@ export class ReplayInputHelper {
       return this.input.name; // Use the 'name' property of the File object
     } else {
       // Check and handle the type of input to derive the filename accordingly
-      if (typeof this.input === 'object' && 'someProperty' in this.input) {
-        return this.input.someProperty; // Replace 'someProperty' with the actual property name
+      if (typeof this.input === 'object' && 'filename' in this.input) {
+        return this.input.filename; // Replace 'someProperty' with the actual property name
       } else {
         throw new Error('Unsupported input type');
       }
