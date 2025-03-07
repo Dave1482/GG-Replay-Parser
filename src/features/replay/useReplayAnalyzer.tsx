@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ReplayAnalyzer } from "./ReplayAnalyzer"; // Update the path if necessary
 
 // Define a type for the demolition events
-type DemolitionEvent = {
+export type DemolitionEvent = {
   attackerName: string;
   victimName: string;
   frameNumber: number;
