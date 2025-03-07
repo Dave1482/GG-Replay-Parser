@@ -3,6 +3,7 @@ import { ReplayAnalyzer } from "./ReplayAnalyzer"; // Make sure to adjust the pa
 
 export const useReplayAnalyzer = () => {
     const [busy, setBusy] = useState(false);
+    const [demolitionEvents, setDemolitionEvents] = useState([]);
 
     const analyzeFile = (file: File) => {
         setBusy(true);
@@ -11,7 +12,8 @@ export const useReplayAnalyzer = () => {
             try {
                 const content = reader.result as string;
                 const analyzer = new ReplayAnalyzer();
-                analyzer.analyzeReplayContent(content); // Add a new method to handle content directly
+                const events = analyzer.getDemolitionEvents(content);
+                setDemolitionEvents(events);
                 console.log("Replay analysis completed!");
             } catch (error) {
                 console.error("Error analyzing replay:", error);
@@ -22,9 +24,9 @@ export const useReplayAnalyzer = () => {
         reader.readAsText(file);
     };
 
-    return { analyzeFile, busy };
+    return { analyzeFile, busy, demolitionEvents };
 };
-ReplayAnalyzer.prototype.analyzeReplayContent = function (content) {
+/*ReplayAnalyzer.prototype.analyzeReplayContent = function (content) {
     try {
         const replayData = JSON.parse(content);
         this.exploreJsonStructure(replayData);
@@ -35,3 +37,4 @@ ReplayAnalyzer.prototype.analyzeReplayContent = function (content) {
         console.error("Error analyzing replay content:", error);
     }
 };
+*/
