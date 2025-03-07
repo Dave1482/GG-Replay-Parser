@@ -38,38 +38,27 @@ export const ReplayInput = () => {
   const { status } = useSession();
 
   useEffect(() => {
-    setIsDeveloper(!!localStorage.getItem("developer"));
+    setIsDeveloper(!!localStorage.getItem('developer'));
   }, []);
 
   return (
     <div className="mx-auto w-full max-w-prose flex-col space-y-1">
       <DropOverlay onFile={mutate} enabled={!busyWorker} />
-      <FileInput disabled={busyWorker || status !== "authenticated"} onChange={mutate}>
+      <FileInput disabled={busyWorker || status !== 'authenticated'} onChange={mutate}>
         <DocumentIcon className="w-10" />
         <p>
-          Drag and drop or{" "}
-          <span className="font-bold text-sky-700 dark:text-sky-400">
-            browse for a replay file
-          </span>{" "}
-          to analyze
+          Drag and drop or <span className="font-bold text-sky-700 dark:text-sky-400">browse for a replay file</span> to analyze
         </p>
       </FileInput>
       <div className="text-center">
-        No replay?{" "}
-        <button
-          className="link disabled:cursor-not-allowed"
-          disabled={busyWorker}
-          onClick={() => mutate(sampleReplay)}
-        >
+        No replay?{' '}
+        <button className="link disabled:cursor-not-allowed" disabled={busyWorker} onClick={() => mutate(sampleReplay)}>
           View sample
         </button>
         {isDeveloper ? (
           <span>
-            . Or{" "}
-            <button
-              className="link disabled:cursor-not-allowed"
-              onClick={() => mutate("SERVER_SAMPLE")}
-            >
+            . Or{' '}
+            <button className="link disabled:cursor-not-allowed" onClick={() => mutate('SERVER_SAMPLE')}>
               view sample on server
             </button>
           </span>
