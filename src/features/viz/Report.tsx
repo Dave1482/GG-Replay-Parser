@@ -75,7 +75,8 @@ export const Report = () => {
                     <Graph key="Player Assists" title="Player Assists" defaultMax={4} valFn={(x) => x.Assists} scores={stats} />
                     <Graph key="Player Saves" title="Player Saves" defaultMax={4} valFn={(x) => x.Saves} scores={stats} />
                     <Graph key="Player Shots" title="Player Shots" defaultMax={8} valFn={(x) => x.Shots} scores={stats} />
-                    <Graph key="Player Shots" title="Player Demos" defaultMax={8} valFn={(x) => x.Demos} scores={stats} />
+                    <Graph key="Player Demos" title="Player Demos" defaultMax={8} valFn={(x) => x.Demos} scores={stats} />
+                    <Graph key="Player DemolishFx" title="Player DemolishFx" defaultMax={8} valFn={(x) => x.DemolishFx} scores={stats} />
                 </div>
             ) : null}
             {demolitionEvents.length > 0 && (
