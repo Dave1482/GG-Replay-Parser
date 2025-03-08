@@ -50,7 +50,7 @@ export const Report = () => {
     const replayIndex = replays.length > 1 ? currentPage - 2 : currentPage - 1;
     const replay = replays[replayIndex];
     const stats = replay.data.properties.PlayerStats;
-    const parsedContent = replays ? JSON.parse(replays) : null;
+    const parsedContent = replays && Array.isArray(replays) ? replay : null;
     
     return (
         <div className="mt-8 flex flex-col space-y-6">
@@ -85,29 +85,29 @@ export const Report = () => {
                 </div>
             )}
             <h3 className="text-xl font-semibold">Demolition Events:</h3>
-            {replay.demolitionEvents && replay.demolitionEvents.length > 0 ? (
-              <ul>
-                {replay.demolitionEvents.map((event, i) => (
-                  <div key={i}>
-                    <p>Attacker: {event.attacker}</p>
-                    <p>Victim: {event.victimName}</p>
-                    <p>Frame: {event.frameNumber}</p>
-                  </div>
-                ))}
-              </ul>
-            ) : (
-              parsedContent && parsedContent.frames ? (
-                <ul>
-                  {parsedContent.frames.map((frame, index) => (
-                    <li key={index}>
-                      <p>Parsed Frames: {frame}, No demolition events found.</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No parsed content available or no demolition events found.</p>
-              )
-            )}
+            <div className="mt-8 flex flex-col space-y-6">
+                {replay.demolitionEvents && replay.demolitionEvents.length > 0 ? (
+                  <ul>
+                    {replay.demolitionEvents.map((event, i) => (
+                      <div key={i}>
+                        <p>Attacker: {event.attacker}</p>
+                        <p>Victim: {event.victimName}</p>
+                        <p>Frame: {event.frameNumber}</p>
+                      </div>
+                    ))}
+                  </ul>
+                ) : parsedContent && parsedContent.frames ? (
+                  <ul>
+                    {parsedContent.frames.map((frame, index) => (
+                      <li key={index}>
+                        <p>Parsed Frames: {JSON.stringify(frame)}, No demolition events found.</p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No parsed content available or no demolition events found.</p>
+                )}
+          </div>
 
         </div>
     );
