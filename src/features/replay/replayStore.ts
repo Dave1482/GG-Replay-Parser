@@ -202,7 +202,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
 };
 
 export const useReplayFrames = (replayIndex: number) => {
-  const replays = useReplays();
+  const replays: ReplayYield[] = useReplays();
   const parsedContent = replays[replayIndex]?.data;
   return parsedContent?.frames || [];
 };
