@@ -107,8 +107,12 @@ const useReplayStore = create<ReplayStore>()((set) => ({
     clearReplays: () => set(() => ({ replays: [], aggregateStats: null })),
     analyzeReplay: (content: string) => {
       const analyzer = new ReplayAnalyzer();
-      const events = analyzer.findDemolitions(JSON.parse(content));
+      const parsedContent = JSON.parse(content);
+      const frames = parsedContent.frames || [];
     
+      console.log("Parsed frames:", frames);
+    
+      const events = analyzer.findDemolitions(parsedContent);
       console.log("Demolition events:", events);
     
       set((state) => ({
@@ -116,7 +120,8 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           if (index === state.replays.length - 1) {
             return {
               ...replay,
-              demolitionEvents: events, // Attach demolition events to the replay
+              demolitionEvents: events,
+              frames, // Attach frames to the replay if needed
             };
           }
           return replay;
@@ -193,6 +198,12 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
         team1Wins: Math.round(team1Wins),
         demolitionCounts, // Return the counts of demos per player
     };
+};
+
+export const useReplayFrames = (replayIndex: number) => {
+  const replays = useReplays();
+  const parsedContent = replays[replayIndex]?.data;
+  return parsedContent?.frames || [];
 };
 
 // Helper function to calculate aggregate stats
