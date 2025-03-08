@@ -46,6 +46,7 @@ export interface ReplayYield extends ParseArg {
   networkErr: string | null;
   mode: ParseMode;
   demolitionEvents?: DemolitionEvent[]; // Added this line for demolition events
+  frames?: any[]; 
 }
 
 interface AggregateStats {
