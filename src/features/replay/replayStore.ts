@@ -55,6 +55,7 @@ interface AggregateStats {
   winPercentage: number;
   team0Wins: number;
   team1Wins: number;
+  demolitionCounts: Record<string, number>; // Add this line
 }
 
 interface ReplayStore {
