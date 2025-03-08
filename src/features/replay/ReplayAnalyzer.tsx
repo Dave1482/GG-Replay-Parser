@@ -181,17 +181,17 @@ export class ReplayAnalyzer {
   }
 
   // Analyze replay from file
-  analyzeReplay(filePath: string): void {
-    try {
-      const fileContent = fs.readFileSync(filePath, "utf8");
-      this.analyzeReplayContent(fileContent);
-    } catch (error) {
-      console.error(
-        "Error analyzing replay file:",
-        error instanceof Error ? error.message : "Unknown error"
-      );
+  analyzeReplayContent(content: string): void {
+        try {
+            const replayData = JSON.parse(content);
+            this.exploreJsonStructure(replayData);
+            this.buildActorMappings(replayData);
+            const demolitionEvents = this.findDemolitions(replayData);
+            this.printDemolitionSummary(demolitionEvents);
+        } catch (error) {
+            console.error("Error analyzing replay content:", error);
+        }
     }
-  }
 
   // Get demolition events from content string
   getDemolitionEvents(content: string): DemolitionEvent[] {
