@@ -51,7 +51,7 @@ export const Report = () => {
     const replay = replays[replayIndex];
     const stats = replay.data.properties.PlayerStats;
     const parsedContent = replay?.data; // Access the replay data
-    const frames = parsedContent?.frames || []; // Extract the frames or set an empty array
+    const frames = replay?.frames || []; // Extract the frames or set an empty array
     
     return (
         <div className="mt-8 flex flex-col space-y-6">
