@@ -202,9 +202,10 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
 };
 
 export const useReplayFrames = (replayIndex: number) => {
-  const replays: ReplayYield[] = useReplays();
-  const parsedContent = replays[replayIndex]?.data;
-  return parsedContent?.frames || [];
+  const replays: ReplayYield[] = useReplays(); // Make sure this returns ReplayYield[]
+  const replay = replays[replayIndex];
+  const frames = replay?.frames || []; // Access frames safely
+  return frames;
 };
 
 // Helper function to calculate aggregate stats
