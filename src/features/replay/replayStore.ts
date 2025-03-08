@@ -208,10 +208,6 @@ export const useReplayFrames = (replayIndex: number) => {
   return frames;
 };
 
-const analyzeReplayFile = (filePath: string) => {
-  const analyzer = new ReplayAnalyzer();
-  analyzer.analyzeReplay(filePath);
-};
 
 // Helper function to calculate aggregate stats
 /*const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
