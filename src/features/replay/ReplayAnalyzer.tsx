@@ -1,3 +1,5 @@
+/* New stuff?
+
 import fs from "fs";
 
 // Type Definitions
@@ -191,8 +193,8 @@ export class ReplayAnalyzer {
       return [];
     }
   }
-}
-/*import fs from "fs";
+}*/
+import fs from "fs";
 
 export class ReplayAnalyzer {
     private actorToPlayer: Record<string, string> = {};
@@ -327,4 +329,4 @@ export class ReplayAnalyzer {
         }
     }
 }
-*/
+
