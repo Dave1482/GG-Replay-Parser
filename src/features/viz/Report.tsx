@@ -50,7 +50,8 @@ export const Report = () => {
     const replayIndex = replays.length > 1 ? currentPage - 2 : currentPage - 1;
     const replay = replays[replayIndex];
     const stats = replay.data.properties.PlayerStats;
-
+    const parsedContent = replays ? JSON.parse(replays) : null;
+    
     return (
         <div className="mt-8 flex flex-col space-y-6">
             <div className="text-center">
@@ -95,7 +96,16 @@ export const Report = () => {
                     ))}
                 </ul>
             ) : (
-                <p>Parsed Frames: {parsedContent.frames}, No demolition events found.</p>
+                {parsedContent && parsedContent.frames ? (
+                  <ul>
+                    {parsedContent.frames.map((frame, index) => (
+                      <li key={index}><p>Parsed Frames: {parsedContent.frames}, No demolition events found.</p></li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No parsed content available or no demolition events found.</p>
+                )}
+                
             )}
         </div>
     );
