@@ -63,18 +63,18 @@ export class ReplayAnalyzer {
                             const attackerId = demoData.attacker_actor_id;
                             const victimId = demoData.victim_actor_id;
                             if (attackerId && victimId) {
-                                const attackerName = this.actorToPlayer[attackerId] || `Unknown(${attackerId})`;
+                                const attacker = this.actorToPlayer[attackerId] || `Unknown(${attackerId})`;
                                 const victimName = this.actorToPlayer[victimId] || `Unknown(${victimId})`;
                                 const demoKey = `${attackerName}-${victimName}`;
                                 const lastFrame = this.seenDemolitions[demoKey] || -999;
                                 if (frameIdx - lastFrame > 120) {
                                     this.seenDemolitions[demoKey] = frameIdx;
                                     demolitionEvents.push({
-                                        attackerName,
+                                        attacker,
                                         victimName,
                                         frameNumber: frameIdx,
                                     });
-                                    console.log(`Found demolition: ${attackerName} -> ${victimName}`);
+                                    console.log(`Found demolition: ${attacker} -> ${victimName}`);
                                 }
                             }
                         }
@@ -83,6 +83,23 @@ export class ReplayAnalyzer {
             });
         });
         return demolitionEvents;
+    /*
+        findDemolitions(parsedContent: any): DemolitionEvent[] {
+          const demolitions: DemolitionEvent[] = [];
+        
+          if (parsedContent && parsedContent.frames) {
+            for (const frame of parsedContent.frames) {
+              if (frame.event === "demolition") {
+                demolitions.push({
+                  attacker: frame.attacker,
+                  victim: frame.victim,
+                  time: frame.time,
+                });
+              }
+            }
+          }
+        
+          return demolitions;*/
     }
 
     printDemolitionSummary(events: any[]): void {
