@@ -167,19 +167,6 @@ export class ReplayAnalyzer {
       });
   }
 
-  // Analyze replay from content string
-  analyzeReplayContent(content: string): void {
-    try {
-      const replayData = JSON.parse(content);
-      this.exploreJsonStructure(replayData);
-      this.buildActorMappings(replayData);
-      const demolitionEvents = this.findDemolitions(replayData);
-      this.printDemolitionSummary(demolitionEvents);
-    } catch (error) {
-      console.error("Error analyzing replay content:", error);
-    }
-  }
-
   // Analyze replay from file
   analyzeReplayContent(content: string): void {
         try {
