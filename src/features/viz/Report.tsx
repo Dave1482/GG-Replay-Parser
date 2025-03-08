@@ -50,7 +50,8 @@ export const Report = () => {
     const replayIndex = replays.length > 1 ? currentPage - 2 : currentPage - 1;
     const replay = replays[replayIndex];
     const stats = replay.data.properties.PlayerStats;
-    const parsedContent = replays && Array.isArray(replays) ? replay : null;
+    const parsedContent = replay?.data; // Access the replay data
+    const frames = parsedContent?.frames || []; // Extract the frames or set an empty array
     
     return (
         <div className="mt-8 flex flex-col space-y-6">
@@ -108,6 +109,19 @@ export const Report = () => {
                   <p>No parsed content available or no demolition events found.</p>
                 )}
           </div>
+          <div>
+                {frames.length > 0 ? (
+                  <ul>
+                    {frames.map((frame, index) => (
+                      <li key={index}>
+                        <p>Frame {index + 1}: {JSON.stringify(frame)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No frames found for this replay.</p>
+                )}
+         </div>
 
         </div>
     );
