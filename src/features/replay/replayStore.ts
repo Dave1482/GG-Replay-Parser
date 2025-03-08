@@ -90,7 +90,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           ...rest,
           mode,
           input: new ReplayInput(input),
-          demolitionEvents: [], // Ensure to initialize the demolition events array
+          demolitionEvents: [], // Initialize demolition events array
         };
 
         const updatedReplays = [...state.replays, newReplay];
@@ -106,16 +106,16 @@ const useReplayStore = create<ReplayStore>()((set) => ({
     clearReplays: () => set(() => ({ replays: [], aggregateStats: null })),
     analyzeReplay: (content: string) => {
       const analyzer = new ReplayAnalyzer();
-      analyzer.analyzeReplayContent(content);
       const events = analyzer.findDemolitions(JSON.parse(content));
+    
       console.log("Demolition events:", events);
-      
+    
       set((state) => ({
         replays: state.replays.map((replay, index) => {
           if (index === state.replays.length - 1) {
             return {
               ...replay,
-              demolitionEvents: events, // Update the replay with demolition events
+              demolitionEvents: events, // Attach demolition events to the replay
             };
           }
           return replay;
@@ -134,6 +134,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
             winPercentage: 0,
             team0Wins: 0,
             team1Wins: 0,
+            demolitionCounts: {},
         };
     }
 
@@ -142,7 +143,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
     let wins = 0;
     let team0Wins = 0;
     let team1Wins = 0;
-
+    const demolitionCounts: Record<string, number> = {}; // Store demo counts per player
     replays.forEach((replay) => {
         const team0Score = replay.data.properties.Team0Score || 0;
         const team1Score = replay.data.properties.Team1Score || 0;
@@ -168,6 +169,18 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
             });
             totalScore += gameTotal;
         }
+      // Aggregate demolition events
+      if (replay.demolitionEvents) {
+        replay.demolitionEvents.forEach((event) => {
+          const { attacker } = event;
+          if (attacker) {
+            if (!demolitionCounts[attacker]) {
+              demolitionCounts[attacker] = 0;
+            }
+            demolitionCounts[attacker]++;
+          }
+        });
+      }
     });
 
     return {
@@ -177,6 +190,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
         winPercentage: Math.round((wins / replays.length) * 100),
         team0Wins: Math.round(team0Wins),
         team1Wins: Math.round(team1Wins),
+        demolitionCounts, // Return the counts of demos per player
     };
 };
 
