@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import fs from "fs";
 
 // Type Definitions
 export interface DemolitionEvent {
