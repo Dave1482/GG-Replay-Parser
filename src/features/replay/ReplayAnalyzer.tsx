@@ -1,17 +1,17 @@
 import * as fs from "fs";
 
 // Type Definitions
-interface DemolitionEvent {
-  attackerName: string;
+export interface DemolitionEvent {
+  attacker: string;
   victimName: string;
   frameNumber: number;
 }
 
-interface PlayerMapping {
+export interface PlayerMapping {
   [actorId: string]: string;
 }
 
-interface DemolitionCounts {
+export interface DemolitionCounts {
   [playerName: string]: number;
 }
 
@@ -20,7 +20,7 @@ export class ReplayAnalyzer {
   private seenDemolitions: Record<string, number> = {};
 
   // Explore JSON structure for debugging
-  private exploreJsonStructure(
+  exploreJsonStructure(
     data: any,
     path: string = "",
     maxDepth: number = 3,
@@ -63,7 +63,7 @@ export class ReplayAnalyzer {
   }
 
   // Build mappings from actor IDs to player names
-  private buildActorMappings(replayData: any): void {
+  buildActorMappings(replayData: any): void {
     const frames = replayData?.network_frames?.frames || [];
     frames.forEach((frame: any) => {
       (frame.replications || []).forEach((replication: any) => {
@@ -89,7 +89,7 @@ export class ReplayAnalyzer {
   }
 
   // Find demolitions in replay data
-  private findDemolitions(replayData: any): DemolitionEvent[] {
+  findDemolitions(replayData: any): DemolitionEvent[] {
     const demolitionEvents: DemolitionEvent[] = [];
     const frames = replayData?.network_frames?.frames || [];
 
@@ -109,23 +109,23 @@ export class ReplayAnalyzer {
               const victimId = demoData.victim_actor_id;
 
               if (attackerId && victimId) {
-                const attackerName =
+                const attacker =
                   this.actorToPlayer[attackerId] || `Unknown(${attackerId})`;
                 const victimName =
                   this.actorToPlayer[victimId] || `Unknown(${victimId})`;
 
-                const demoKey = `${attackerName}-${victimName}`;
+                const demoKey = `${attacker}-${victimName}`;
                 const lastFrame = this.seenDemolitions[demoKey] || -999;
 
                 if (frameIdx - lastFrame > 120) {
                   this.seenDemolitions[demoKey] = frameIdx;
                   demolitionEvents.push({
-                    attackerName,
+                    attacker,
                     victimName,
                     frameNumber: frameIdx,
                   });
                   console.log(
-                    `Found demolition: ${attackerName} -> ${victimName}`
+                    `Found demolition: ${attacker} -> ${victimName}`
                   );
                 }
               }
@@ -138,7 +138,7 @@ export class ReplayAnalyzer {
   }
 
   // Print demolition summary
-  public printDemolitionSummary(events: DemolitionEvent[]): void {
+  printDemolitionSummary(events: DemolitionEvent[]): void {
     if (events.length === 0) {
       console.log("\nNo demolitions found in this replay.");
       return;
@@ -148,13 +148,13 @@ export class ReplayAnalyzer {
     console.log("-".repeat(40));
 
     const demoCounts = events.reduce((counts: DemolitionCounts, event) => {
-      counts[event.attackerName] = (counts[event.attackerName] || 0) + 1;
+      counts[event.attacker] = (counts[event.attacker] || 0) + 1;
       return counts;
     }, {});
 
     console.log("\nChronological Demolition Events:");
     events.forEach((event, i) => {
-      console.log(`${i + 1}. ${event.attackerName} -> ${event.victimName}`);
+      console.log(`${i + 1}. ${event.attacker} -> ${event.victimName}`);
     });
 
     console.log("\nDemolition Leaderboard:");
@@ -168,7 +168,7 @@ export class ReplayAnalyzer {
   }
 
   // Analyze replay from content string
-  public analyzeReplayContent(content: string): void {
+  analyzeReplayContent(content: string): void {
     try {
       const replayData = JSON.parse(content);
       this.exploreJsonStructure(replayData);
@@ -181,7 +181,7 @@ export class ReplayAnalyzer {
   }
 
   // Analyze replay from file
-  public analyzeReplay(filePath: string): void {
+  analyzeReplay(filePath: string): void {
     try {
       const fileContent = fs.readFileSync(filePath, "utf8");
       this.analyzeReplayContent(fileContent);
@@ -194,7 +194,7 @@ export class ReplayAnalyzer {
   }
 
   // Get demolition events from content string
-  public getDemolitionEvents(content: string): DemolitionEvent[] {
+  getDemolitionEvents(content: string): DemolitionEvent[] {
     try {
       const replayData = JSON.parse(content);
       this.buildActorMappings(replayData);
