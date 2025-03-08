@@ -65,7 +65,7 @@ export class ReplayAnalyzer {
                             if (attackerId && victimId) {
                                 const attacker = this.actorToPlayer[attackerId] || `Unknown(${attackerId})`;
                                 const victimName = this.actorToPlayer[victimId] || `Unknown(${victimId})`;
-                                const demoKey = `${attackerName}-${victimName}`;
+                                const demoKey = `${attacker}-${victimName}`;
                                 const lastFrame = this.seenDemolitions[demoKey] || -999;
                                 if (frameIdx - lastFrame > 120) {
                                     this.seenDemolitions[demoKey] = frameIdx;
@@ -110,12 +110,12 @@ export class ReplayAnalyzer {
         console.log("\n*** Demolition Summary ***");
         console.log("-".repeat(40));
         const demoCounts = events.reduce((counts: Record<string, number>, event: any) => {
-            counts[event.attackerName] = (counts[event.attackerName] || 0) + 1;
+            counts[event.attacker] = (counts[event.attacker] || 0) + 1;
             return counts;
         }, {});
         console.log("\nChronological Demolition Events:");
         events.forEach((event, i) => {
-            console.log(`${i + 1}. ${event.attackerName} -> ${event.victimName}`);
+            console.log(`${i + 1}. ${event.attacker} -> ${event.victimName}`);
         });
         console.log("\nDemolition Leaderboard:");
         Object.entries(demoCounts)
