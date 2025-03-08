@@ -95,7 +95,7 @@ export const Report = () => {
                     ))}
                 </ul>
             ) : (
-                <p>No demolition events found.</p>
+                <p>Parsed Frames: {parsedContent.frames}, No demolition events found.</p>
             )}
         </div>
     );
