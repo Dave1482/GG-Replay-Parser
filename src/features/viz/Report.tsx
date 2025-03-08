@@ -97,16 +97,10 @@ export const Report = () => {
                       </div>
                     ))}
                   </ul>
-                ) : parsedContent && parsedContent.frames ? (
-                  <ul>
-                    {parsedContent.frames.map((frame, index) => (
-                      <li key={index}>
-                        <p>Parsed Frames: {JSON.stringify(frame)}, No demolition events found.</p>
-                      </li>
-                    ))}
-                  </ul>
                 ) : (
-                  <p>No parsed content available or no demolition events found.</p>
+                  <ul>
+                    <p>No demolition events found.</p>
+                  </ul>
                 )}
           </div>
           <div>
