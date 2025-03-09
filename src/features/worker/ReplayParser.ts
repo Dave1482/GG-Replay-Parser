@@ -19,7 +19,7 @@ export class ReplayParser {
   const results: any[] = [];
   const decoder = new TextDecoder("utf-8");
   const chunkSize = 1024 * 1024; // 1 MB chunk size
-  const overlapSize = 500; // Increased overlap size for boundary issues
+  const overlapSize = 1023; // Increased overlap size for boundary issues
   let partialString = ""; // Stores decoded data including overlap
 
   function recursiveSearch(obj: any): void {
