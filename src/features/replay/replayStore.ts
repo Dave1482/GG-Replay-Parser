@@ -273,5 +273,29 @@ export const useAggregateStats = () =>
   useReplayStore((state) => state.aggregateStats);
 export const useParsedReplay = () => {
   const replays = useReplays();
+
+    if (replays.length === 0) {
+    return null;
+  }
+
+  const latestReplay = replays[replays.length - 1];
+
+  // Extract the body of data (modify this according to your data structure)
+  const bodyData = latestReplay.data.properties.Body || {}; // Assuming 'Body' contains the data
+
+  // Process the extracted body data (add your custom logic here)
+  const processedBody = Object.entries(bodyData).map(([key, value]) => {
+    // Example transformation: append a prefix to each key
+    return { [`processed_${key}`]: value };
+  });
+
+  return {
+    replay: latestReplay,
+    body: bodyData,
+    processedBody: processedBody,
+  };
+};
+/*
   return replays.length > 0 ? replays[replays.length - 1] : null;
 };
+*/
