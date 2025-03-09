@@ -25,9 +25,6 @@ export const Replay = () => {
         )}`}
       />
     ) : null}
-    {parsedReplay?.networkErr ? (
-      <WarningBox message={`network data: ${parsedReplay.networkErr}`} />
-    ) : null}
     {parsedReplay !== null ? (
       <div>
         <Report />
