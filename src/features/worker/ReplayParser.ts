@@ -32,7 +32,7 @@ function searchInLargeUint8ArrayWithOverlap(
 ): string | null {
   const decoder = new TextDecoder("utf-8");
   const chunkSize = 1024 * 1024; // 1 MB chunk size
-  const overlapSize = 1023; // Keep the last 100 bytes of each chunk for overlap
+  const overlapSize = 100; // Keep the last 100 bytes of each chunk for overlap
   let partialString = ""; // Stores decoded data including overlap
 
   for (let i = 0; i < data.length; i += chunkSize) {
