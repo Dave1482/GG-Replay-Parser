@@ -3,7 +3,7 @@ import { ReplayAnalyzer } from "./ReplayAnalyzer"; // Update the path if necessa
 
 // Define a type for the demolition events
 export type DemolitionEvent = {
-  attackerName: string;
+  attacker: string;
   victimName: string;
   frameNumber: number;
 };

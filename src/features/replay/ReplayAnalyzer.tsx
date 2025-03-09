@@ -63,18 +63,18 @@ export class ReplayAnalyzer {
                             const attackerId = demoData.attacker_actor_id;
                             const victimId = demoData.victim_actor_id;
                             if (attackerId && victimId) {
-                                const attackerName = this.actorToPlayer[attackerId] || `Unknown(${attackerId})`;
+                                const attacker = this.actorToPlayer[attackerId] || `Unknown(${attackerId})`;
                                 const victimName = this.actorToPlayer[victimId] || `Unknown(${victimId})`;
-                                const demoKey = `${attackerName}-${victimName}`;
+                                const demoKey = `${attacker}-${victimName}`;
                                 const lastFrame = this.seenDemolitions[demoKey] || -999;
                                 if (frameIdx - lastFrame > 120) {
                                     this.seenDemolitions[demoKey] = frameIdx;
                                     demolitionEvents.push({
-                                        attackerName,
+                                        attacker,
                                         victimName,
                                         frameNumber: frameIdx,
                                     });
-                                    console.log(`Found demolition: ${attackerName} -> ${victimName}`);
+                                    console.log(`Found demolition: ${attacker} -> ${victimName}`);
                                 }
                             }
                         }
@@ -83,6 +83,23 @@ export class ReplayAnalyzer {
             });
         });
         return demolitionEvents;
+    /*
+        findDemolitions(parsedContent: any): DemolitionEvent[] {
+          const demolitions: DemolitionEvent[] = [];
+        
+          if (parsedContent && parsedContent.frames) {
+            for (const frame of parsedContent.frames) {
+              if (frame.event === "demolition") {
+                demolitions.push({
+                  attacker: frame.attacker,
+                  victim: frame.victim,
+                  time: frame.time,
+                });
+              }
+            }
+          }
+        
+          return demolitions;*/
     }
 
     printDemolitionSummary(events: any[]): void {
@@ -93,12 +110,12 @@ export class ReplayAnalyzer {
         console.log("\n*** Demolition Summary ***");
         console.log("-".repeat(40));
         const demoCounts = events.reduce((counts: Record<string, number>, event: any) => {
-            counts[event.attackerName] = (counts[event.attackerName] || 0) + 1;
+            counts[event.attacker] = (counts[event.attacker] || 0) + 1;
             return counts;
         }, {});
         console.log("\nChronological Demolition Events:");
         events.forEach((event, i) => {
-            console.log(`${i + 1}. ${event.attackerName} -> ${event.victimName}`);
+            console.log(`${i + 1}. ${event.attacker} -> ${event.victimName}`);
         });
         console.log("\nDemolition Leaderboard:");
         Object.entries(demoCounts)
