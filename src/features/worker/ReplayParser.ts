@@ -14,9 +14,10 @@ export class ReplayParser {
 
   public parse(data: Uint8Array): ParsedReplay {
     this.replay = this.mod.parse(data);
-
+    
+    const decoder = new TextDecoder(); // Create a decoder instance
     return {
-      replay: JSON.parse(new TextDecoder().decode(this.replay.full_json(false))) as Replay,
+      replay: JSON.parse(decoder.decode(this.replay.full_json(false))) as Replay,
       //replay: JSON.parse(this.replay.header_json(false)) as Replay,
       networkErr: this.replay.network_err() ?? null,
     };
