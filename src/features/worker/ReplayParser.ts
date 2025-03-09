@@ -17,8 +17,8 @@ export class ReplayParser {
     
     //const decoder = new TextDecoder(); // Create a decoder instance
     return {
-      replay: JSON.parse(JSON.stringify(this.replay.full_json(false))) as Replay,
-      //replay: JSON.parse(this.replay.header_json(false)) as Replay,
+      //replay: JSON.parse(JSON.stringify(this.replay.full_json(false))) as Replay,
+      replay: JSON.parse(this.replay.header_json(false)) as Replay,
       networkErr: this.replay.network_err() ?? null,
     };
   }
