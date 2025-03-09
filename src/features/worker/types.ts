@@ -15,6 +15,14 @@ export interface HeaderProperties {
   Date: string;
   RecordFPS: number;
   NumFrames: number;
+  Body?: BodyData; // Add the Body property
+}
+
+export interface BodyData {
+  [key: string]: unknown; // Adjust the structure as needed
+  // Example:
+  // content: string;
+  // metadata: { [key: string]: any };
 }
 
 export interface Goal {
