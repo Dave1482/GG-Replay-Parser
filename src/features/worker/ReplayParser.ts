@@ -1,6 +1,6 @@
 import { Replay, ParsedReplay, ReplayJsonOptions } from "./types";
 import * as wasmModule from "../../../crate/pkg/rl_wasm";
-import { TextDecoder } from 'text-encoding'; // Only needed if TextDecoder is not globally available.
+//import { TextDecoder } from 'text-encoding'; // Only needed if TextDecoder is not globally available.
 type RLMod = typeof wasmModule;
 
 // The parser assumes that the wasm bundle has been fetched and compiled before
@@ -15,9 +15,9 @@ export class ReplayParser {
   public parse(data: Uint8Array): ParsedReplay {
     this.replay = this.mod.parse(data);
     
-    const decoder = new TextDecoder(); // Create a decoder instance
+    //const decoder = new TextDecoder(); // Create a decoder instance
     return {
-      replay: JSON.parse(decoder.decode(this.replay.full_json(false))) as Replay,
+      replay: JSON.parse(JSON.stringify(this.replay.full_json(false))) as Replay,
       //replay: JSON.parse(this.replay.header_json(false)) as Replay,
       networkErr: this.replay.network_err() ?? null,
     };
