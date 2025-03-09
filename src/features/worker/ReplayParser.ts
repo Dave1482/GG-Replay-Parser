@@ -1,6 +1,6 @@
 import { Replay, ParsedReplay, ReplayJsonOptions } from "./types";
 import * as wasmModule from "../../../crate/pkg/rl_wasm";
-import { TextDecoder } from 'util'; // Only needed if TextDecoder is not globally available.
+import { TextDecoder } from 'text-encoding'; // Only needed if TextDecoder is not globally available.
 type RLMod = typeof wasmModule;
 
 // The parser assumes that the wasm bundle has been fetched and compiled before
