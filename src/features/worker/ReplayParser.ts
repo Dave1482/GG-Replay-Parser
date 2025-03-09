@@ -11,9 +11,7 @@ function findDemolishExtended(data: any): any | null {
   if (typeof data !== 'object' || data === null) return null;
 
   // Check if the object matches the desired structure
-  if (
-    data.attribute?.DemolishExtended
-  ) {
+  if (data.attribute?.DemolishExtended) {
     return data;
   }
 
@@ -26,6 +24,22 @@ function findDemolishExtended(data: any): any | null {
   }
 
   return null;
+}
+
+// New utility function to filter network_frames
+function filterDemolishExtendedFrames(networkFrames: any): any[] {
+  if (!networkFrames || !Array.isArray(networkFrames.frames)) {
+    console.error("Invalid network frames data.");
+    return [];
+  }
+
+  return networkFrames.frames.filter((frame: any) => {
+    return (
+      typeof frame === "object" &&
+      frame !== null &&
+      frame.attribute?.DemolishExtended !== undefined
+    );
+  });
 }
 
 export class ReplayParser {
@@ -41,13 +55,24 @@ export class ReplayParser {
 
     // Parse full JSON data for replay
     const replayData = JSON.parse(JSON.stringify(this.replay.full_json(true)));
-      console.log("", JSON.parse(JSON.stringify(this.replay.full_json(true))));
+    console.log("", JSON.parse(JSON.stringify(this.replay.full_json(true))));
+
     // Use the findDemolishExtended function to locate specific data
     const demolishExtended = findDemolishExtended(replayData);
     if (demolishExtended) {
       console.log("Found DemolishExtended:", demolishExtended);
     } else {
       console.log("DemolishExtended not found.");
+    }*/
+
+    // Filter network_frames for objects with DemolishExtended
+    const networkFrames = replayData.network_frames; // Assuming network_frames is part of the parsed data
+    const demolishExtendedFrames = filterDemolishExtendedFrames(networkFrames);
+
+    if (demolishExtendedFrames.length > 0) {
+      console.log("Frames with DemolishExtended found:", demolishExtendedFrames);
+    } else {
+      console.log("No frames with DemolishExtended found.");
     }
 
     return {
