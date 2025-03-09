@@ -30,9 +30,6 @@ export class ReplayParser {
 
       // Check if the object matches the desired structure
       if (
-        obj.actor_id === 149 &&
-        obj.stream_id === 64 &&
-        obj.object_id === 292 &&
         obj.attribute?.DemolishExtended
       ) {
         results.push(obj);
