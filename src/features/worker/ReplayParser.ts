@@ -15,7 +15,7 @@ export class ReplayParser {
     this.replay = this.mod.parse(data);
 
     return {
-      replay: JSON.parse(this.replay.full_json(false)) as Replay,
+      replay: JSON.parse(this.replay.header_json(false)) as Replay,
       networkErr: this.replay.network_err() ?? null,
     };
   }
