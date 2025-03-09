@@ -284,10 +284,10 @@ export const useParsedReplay = () => {
   const bodyData = latestReplay.data.properties.Body || {}; // Assuming 'Body' contains the data
 
   // Process the extracted body data (add your custom logic here)
-  const processedBody = Object.entries(bodyData).map(([key, value]) => {
-    // Example transformation: append a prefix to each key
-    return { [`processed_${key}`]: value };
-  });
+  // Process the Body data
+  const processedBody = Object.entries(bodyData).map(([key, value]) => ({
+    [key]: value,
+  }));
 
   return {
     replay: latestReplay,
