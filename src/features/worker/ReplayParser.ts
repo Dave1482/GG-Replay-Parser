@@ -56,6 +56,31 @@ export class ReplayParser {
   }
 
   /**
+   * Parses the `DemolishExtended` object from the found context.
+   */
+  private parseDemolishExtended(context: string): any | null {
+    try {
+      // Parse the JSON object if the context contains valid JSON
+      const startIdx = context.indexOf("{"); // Find the start of the JSON object
+      const endIdx = context.lastIndexOf("}"); // Find the end of the JSON object
+
+      if (startIdx !== -1 && endIdx !== -1) {
+        const jsonString = context.slice(startIdx, endIdx + 1);
+        const demolishExtendedObject = JSON.parse(jsonString);
+
+        console.log("Parsed DemolishExtended Object:", demolishExtendedObject);
+        return demolishExtendedObject;
+      } else {
+        console.error("Failed to parse DemolishExtended: JSON boundaries not found.");
+      }
+    } catch (error) {
+      console.error("Error while parsing DemolishExtended object:", error);
+    }
+
+    return null;
+  }
+
+  /**
    * Parses the replay data and looks for specific structures like DemolishExtended.
    */
   public parse(data: Uint8Array): ParsedReplay {
@@ -67,6 +92,13 @@ export class ReplayParser {
 
     if (context) {
       console.log(`Context around "${searchString}":\n`, context);
+
+      // Parse the specific DemolishExtended object
+      const demolishExtended = this.parseDemolishExtended(context);
+
+      if (demolishExtended) {
+        console.log("Successfully parsed DemolishExtended object:", demolishExtended);
+      }
     } else {
       console.log(`"${searchString}" not found in the replay data.`);
     }
