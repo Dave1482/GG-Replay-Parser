@@ -25,20 +25,44 @@ function findDemolishExtended(data: any): any | null {
   return null;
 }
 
-// New utility function to filter network_frames
-function filterDemolishExtendedFrames(networkFrames: any): any[] {
-  if (!networkFrames || !Array.isArray(networkFrames.frames)) {
-    console.error("Invalid network frames data.");
-    return [];
+// New utility function to search large Uint8Array data in chunks
+function searchInLargeUint8ArrayWithOverlap(
+  data: Uint8Array,
+  searchString: string
+): string | null {
+  const decoder = new TextDecoder("utf-8");
+  const chunkSize = 1024 * 1024; // 1 MB chunk size
+  const overlapSize = 1023; // Keep the last 100 bytes of each chunk for overlap
+  let partialString = ""; // Stores decoded data including overlap
+
+  for (let i = 0; i < data.length; i += chunkSize) {
+    // Extract the current chunk
+    const chunk = data.subarray(i, i + chunkSize);
+
+    // Decode the chunk and prepend any leftover data from the last iteration
+    const decodedChunk = decoder.decode(chunk, { stream: true });
+    partialString += decodedChunk;
+
+    // Check for the target string in the concatenated data
+    if (partialString.includes(searchString)) {
+      console.log(`Found "${searchString}" in data!`);
+
+      // Extract context around the match (e.g., 50 characters before and after)
+      const startIdx = partialString.indexOf(searchString);
+      const context = partialString.slice(
+        Math.max(0, startIdx - 50), // Include 50 characters before the match
+        startIdx + searchString.length + 50 // Include 50 characters after the match
+      );
+
+      return context;
+    }
+
+    // Retain the last few bytes for overlap with the next chunk
+    partialString = partialString.slice(-overlapSize);
   }
 
-  return networkFrames.frames.filter((frame: any) => {
-    return (
-      typeof frame === "object" &&
-      frame !== null &&
-      frame.attribute?.DemolishExtended !== undefined
-    );
-  });
+  console.log(`"${searchString}" not found in data.`);
+  return null;
 }
 
 export class ReplayParser {
@@ -53,26 +77,16 @@ export class ReplayParser {
     this.replay = this.mod.parse(data);
 
     // Parse full JSON data for replay
-    
     const replayData = JSON.parse(JSON.stringify(this.replay.full_json(true)));
-    /*console.log("", JSON.parse(JSON.stringify(this.replay.full_json(true))));
 
-    // Use the findDemolishExtended function to locate specific data
-    const demolishExtended = findDemolishExtended(replayData);
-    if (demolishExtended) {
-      console.log("Found DemolishExtended:", demolishExtended);
+    // Use the new function to search for DemolishExtended within large Uint8Array
+    const searchString = "DemolishExtended";
+    const context = searchInLargeUint8ArrayWithOverlap(data, searchString);
+
+    if (context) {
+      console.log(`Context around "${searchString}":\n`, context);
     } else {
-      console.log("DemolishExtended not found.");
-    }*/
-
-    // Filter network_frames for objects with DemolishExtended
-    const networkFrames = replayData.network_frames; // Assuming network_frames is part of the parsed data
-    const demolishExtendedFrames = filterDemolishExtendedFrames(networkFrames);
-
-    if (demolishExtendedFrames.length > 0) {
-      console.log("Frames with DemolishExtended found:", demolishExtendedFrames);
-    } else {
-      console.log("No frames with DemolishExtended found.");
+      console.log(`"${searchString}" not found in the replay data.`);
     }
 
     return {
