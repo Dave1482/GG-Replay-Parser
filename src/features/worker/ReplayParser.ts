@@ -40,8 +40,8 @@ export class ReplayParser {
     this.replay = this.mod.parse(data);
 
     // Parse full JSON data for replay
-    const replayData = JSON.parse(JSON.stringify(this.replay.full_json(false)));
-
+    const replayData = JSON.parse(JSON.stringify(this.replay.full_json(true)));
+      console.log("", JSON.parse(JSON.stringify(this.replay.full_json(true))));
     // Use the findDemolishExtended function to locate specific data
     const demolishExtended = findDemolishExtended(replayData);
     if (demolishExtended) {
