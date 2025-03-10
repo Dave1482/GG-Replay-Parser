@@ -15,7 +15,7 @@ export class ReplayParser {
   /**
    * Searches for all instances of `DemolishExtended` in a large Uint8Array.
    */
-  private findAllDemolishExtendedInNetworkFrames(data: Uint8Array): any[] {
+  private findAllDemolishExtendedInNetworkFrames(data: Uint8Array): string {
   const results: any[] = [];
   const decoder = new TextDecoder("utf-8");
   const chunkSize = 1024 * 1024; // 1 MB chunk size
@@ -59,11 +59,11 @@ export class ReplayParser {
     partialString = partialString.slice(-overlapSize);
   }
 
-  return results; // Return extracted frames containing "DemolishExtended" as an array
+  return JSON.stringify(results); // Output extracted frames containing "DemolishExtended" as a JSON string
 }
 
 /**
- * Parses the replay data and displays all instances of `DemolishExtended` in full.
+ * Parses the replay data and looks for all instances of `DemolishExtended`.
  */
 public parse(data: Uint8Array): ParsedReplay {
   this.replay = this.mod.parse(data);
@@ -72,10 +72,7 @@ public parse(data: Uint8Array): ParsedReplay {
   const demolishExtendedInstances = this.findAllDemolishExtendedInNetworkFrames(data);
 
   if (demolishExtendedInstances.length > 0) {
-    console.log(`Found ${demolishExtendedInstances.length} instances of DemolishExtended:`);
-    demolishExtendedInstances.forEach((instance: any, index: number) => {
-      console.log(`Instance ${index + 1}:`, JSON.stringify(instance, null, 2));
-    });
+    console.log("Found instances of DemolishExtended:", demolishExtendedInstances);
   } else {
     console.log("No instances of DemolishExtended found.");
   }
