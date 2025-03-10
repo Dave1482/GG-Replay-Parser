@@ -30,21 +30,52 @@ export class ReplayParser {
     }
   }
 
+  function repairJSON(jsonString: string): string {
+    try {
+      // Check if JSON is valid
+      JSON.parse(jsonString);
+      return jsonString; // Return as-is if valid
+    } catch {
+      // Attempt to fix common JSON issues
+      if (!jsonString.startsWith("{")) {
+        jsonString = "{" + jsonString; // Add opening brace if missing
+      }
+      if (!jsonString.endsWith("}")) {
+        jsonString = jsonString + "}"; // Add closing brace if missing
+      }
+
+      // Add quotes around keys if missing
+      jsonString = jsonString.replace(/([{,])\s*([\w]+)\s*:/g, '$1"$2":');
+
+      try {
+        JSON.parse(jsonString); // Re-validate
+      } catch (error) {
+        console.error("Unable to repair JSON:", jsonString, error);
+        return ""; // Return empty string if still invalid
+      }
+
+      return jsonString; // Return repaired JSON
+    }
+  }
+
   for (let i = 0; i < data.length; i += chunkSize) {
     const chunk = data.subarray(i, i + chunkSize);
-    const decodedChunk = decoder.decode(chunk, { stream: true });
-    partialString += decodedChunk;
+    partialString += decoder.decode(chunk, { stream: true });
 
     try {
       const startIdx = partialString.indexOf("{");
       const endIdx = partialString.lastIndexOf("}");
       if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
-        const jsonString = partialString.slice(startIdx, endIdx + 1);
-        const parsedData = JSON.parse(jsonString);
+        let jsonString = partialString.slice(startIdx, endIdx + 1);
+        jsonString = repairJSON(jsonString); // Attempt to repair JSON
 
-        // Navigate to "network_frames" -> "frames" and process
-        if (parsedData.network_frames && Array.isArray(parsedData.network_frames.frames)) {
-          extractDemolishExtended(parsedData.network_frames.frames);
+        if (jsonString) {
+          const parsedData = JSON.parse(jsonString);
+
+          // Navigate to "network_frames" -> "frames" and process
+          if (parsedData.network_frames && Array.isArray(parsedData.network_frames.frames)) {
+            extractDemolishExtended(parsedData.network_frames.frames);
+          }
         }
 
         partialString = partialString.slice(endIdx + 1); // Keep remaining data
@@ -52,7 +83,8 @@ export class ReplayParser {
         console.log("Skipping incomplete JSON fragment.");
       }
     } catch (error) {
-      console.error("JSON parsing error, moving to the next chunk:", error);
+      console.error("JSON parsing error, moving to next chunk:", partialString, error);
+      partialString = ""; // Reset to avoid reprocessing invalid data
     }
 
     // Retain the last portion of this chunk for boundary checks with the next one
