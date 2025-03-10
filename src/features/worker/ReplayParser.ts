@@ -15,18 +15,17 @@ export class ReplayParser {
   /**
    * Searches for all instances of `DemolishExtended` in a large Uint8Array.
    */
-private findSpecificAttributesInUpdatedActors(data: Uint8Array): { results: any[], incompleteFragments: string[] } {
+  private findAllDemolishExtendedInNetworkFrames(data: Uint8Array): string {
   const results: any[] = [];
-  const incompleteFragments: string[] = [];
   const decoder = new TextDecoder("utf-8");
-  const chunkSize = 5 * 1024 * 1024; // 5 MB chunk size
+  const chunkSize = 1024 * 1024; // 1 MB chunk size
   const overlapSize = 1023; // For boundary issues
   let partialString = ""; // Stores decoded data including overlap
 
-  function extractSpecificAttributes(updatedActors: any[]): void {
-    for (const actor of updatedActors) {
-      if (actor.attribute?.DemolishExtended || actor.attribute?.RigidBody) {
-        results.push(actor); // Add the whole actor object if it matches
+  function extractDemolishExtended(frames: any[]): void {
+    for (const frame of frames) {
+      if (frame.attribute?.DemolishExtended) {
+        results.push(frame); // Store the entire frame containing DemolishExtended
       }
     }
   }
@@ -41,69 +40,51 @@ private findSpecificAttributesInUpdatedActors(data: Uint8Array): { results: any[
       const endIdx = partialString.lastIndexOf("}");
       if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
         const jsonString = partialString.slice(startIdx, endIdx + 1);
-        try {
-          const parsedData = JSON.parse(jsonString);
+        const parsedData = JSON.parse(jsonString);
 
-          // Navigate to "network_frames" -> "frames" -> "updated_actors" and process
-          if (
-            parsedData.network_frames &&
-            parsedData.network_frames.frames &&
-            Array.isArray(parsedData.network_frames.frames)
-          ) {
-            for (const frame of parsedData.network_frames.frames) {
-              if (frame.updated_actors && Array.isArray(frame.updated_actors)) {
-                extractSpecificAttributes(frame.updated_actors);
-              }
-            }
-          }
-        } catch (innerError) {
-          console.error("Inner JSON parsing error, but continuing with valid fragments:", innerError);
+        // Navigate to "network_frames" -> "frames" and process
+        if (parsedData.network_frames && Array.isArray(parsedData.network_frames.frames)) {
+          extractDemolishExtended(parsedData.network_frames.frames);
         }
+
         partialString = partialString.slice(endIdx + 1); // Keep remaining data
       } else {
-        // Capture and store incomplete JSON fragments
-        incompleteFragments.push(partialString);
-        partialString = ""; // Reset after storing incomplete fragment
+        console.log("Skipping incomplete JSON fragment.");
       }
-    } catch (outerError) {
-      console.error("Outer JSON parsing error, moving to the next chunk:", outerError);
+    } catch (error) {
+      console.error("JSON parsing error, moving to the next chunk:", error);
     }
 
     // Retain the last portion of this chunk for boundary checks with the next one
     partialString = partialString.slice(-overlapSize);
   }
 
-  return { results, incompleteFragments };
+  return JSON.stringify(results); // Output extracted frames containing "DemolishExtended" as a JSON string
 }
 
 /**
- * Parses replay data, logs all instances of matching actors, and includes incomplete JSON fragments.
+ * Parses the replay data and logs all instances of `DemolishExtended` individually.
  */
 public parse(data: Uint8Array): ParsedReplay {
-  const { results: filteredActors, incompleteFragments } = this.findSpecificAttributesInUpdatedActors(data);
+  this.replay = this.mod.parse(data);
 
-  if (filteredActors.length > 0) {
-    console.log(`Found ${filteredActors.length} matching actors:`);
-    filteredActors.forEach((actor: any, index: number) => {
-      console.log(`Actor ${index + 1}:`, actor);
+  // Find all instances of DemolishExtended in network_frames
+  const demolishExtendedInstances = this.findAllDemolishExtendedInNetworkFrames(data);
+
+  if (demolishExtendedInstances.length > 0) {
+    console.log(`Found ${demolishExtendedInstances.length} instances of DemolishExtended:`);
+    JSON.parse(demolishExtendedInstances).forEach((instance: any, index: number) => {
+      console.log(`Instance ${index + 1}:`, instance);
     });
   } else {
-    console.log("No matching actors found.");
-  }
-
-  if (incompleteFragments.length > 0) {
-    console.log("Incomplete JSON fragments captured:");
-    incompleteFragments.forEach((fragment, index) => {
-      console.log(`Fragment ${index + 1}:`, fragment);
-    });
+    console.log("No instances of DemolishExtended found.");
   }
 
   return {
-    replay: JSON.parse(this.replay?.header_json(false) ?? "{}") as Replay,
-    networkErr: this.replay?.network_err() ?? null,
+    replay: JSON.parse(this.replay.header_json(false)) as Replay,
+    networkErr: this.replay.network_err() ?? null,
   };
 }
-
 
   /**
    * Retrieves the replay JSON with formatting options.
