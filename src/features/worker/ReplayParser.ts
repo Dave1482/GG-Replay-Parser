@@ -15,8 +15,9 @@ export class ReplayParser {
   /**
    * Searches for all instances of `DemolishExtended` in a large Uint8Array.
    */
-  private findSpecificAttributesInUpdatedActors(data: Uint8Array): string {
+private findSpecificAttributesInUpdatedActors(data: Uint8Array): { results: any[], incompleteFragments: string[] } {
   const results: any[] = [];
+  const incompleteFragments: string[] = [];
   const decoder = new TextDecoder("utf-8");
   const chunkSize = 5 * 1024 * 1024; // 5 MB chunk size
   const overlapSize = 1023; // For boundary issues
@@ -36,7 +37,6 @@ export class ReplayParser {
     partialString += decodedChunk;
 
     try {
-      // Extract and parse valid JSON fragments
       const startIdx = partialString.indexOf("{");
       const endIdx = partialString.lastIndexOf("}");
       if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
@@ -61,7 +61,9 @@ export class ReplayParser {
         }
         partialString = partialString.slice(endIdx + 1); // Keep remaining data
       } else {
-        console.log("Skipping incomplete JSON fragment.");
+        // Capture and store incomplete JSON fragments
+        incompleteFragments.push(partialString);
+        partialString = ""; // Reset after storing incomplete fragment
       }
     } catch (outerError) {
       console.error("Outer JSON parsing error, moving to the next chunk:", outerError);
@@ -71,36 +73,37 @@ export class ReplayParser {
     partialString = partialString.slice(-overlapSize);
   }
 
-  return JSON.stringify(results, null, 2); // Pretty-print the results
+  return { results, incompleteFragments };
 }
 
 /**
- * Parses replay data to filter for actors with specific attributes and logs the results.
+ * Parses replay data, logs all instances of matching actors, and includes incomplete JSON fragments.
  */
-public parse(data: Uint8Array): { parsedReplay: ParsedReplay; filteredActors: any[] } {
-  this.replay = this.mod.parse(data);
+public parse(data: Uint8Array): ParsedReplay {
+  const { results: filteredActors, incompleteFragments } = this.findSpecificAttributesInUpdatedActors(data);
 
-  // Find all actors with DemolishExtended or RigidBody attributes
-  const filteredActors = this.findSpecificAttributesInUpdatedActors(data);
-  const parsedFilteredActors = JSON.parse(filteredActors);
-
-  if (parsedFilteredActors.length > 0) {
-    console.log(`Found ${parsedFilteredActors.length} matching actors:`);
-    parsedFilteredActors.forEach((actor: any, index: number) => {
+  if (filteredActors.length > 0) {
+    console.log(`Found ${filteredActors.length} matching actors:`);
+    filteredActors.forEach((actor: any, index: number) => {
       console.log(`Actor ${index + 1}:`, actor);
     });
   } else {
     console.log("No matching actors found.");
   }
 
+  if (incompleteFragments.length > 0) {
+    console.log("Incomplete JSON fragments captured:");
+    incompleteFragments.forEach((fragment, index) => {
+      console.log(`Fragment ${index + 1}:`, fragment);
+    });
+  }
+
   return {
-    parsedReplay: {
-      replay: JSON.parse(this.replay.header_json(false)) as Replay,
-      networkErr: this.replay.network_err() ?? null,
-    },
-    filteredActors: parsedFilteredActors,
+    replay: JSON.parse(this.replay?.header_json(false) ?? "{}") as Replay,
+    networkErr: this.replay?.network_err() ?? null,
   };
 }
+
 
   /**
    * Retrieves the replay JSON with formatting options.
