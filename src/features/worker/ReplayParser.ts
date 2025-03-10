@@ -72,7 +72,11 @@ public parse(data: Uint8Array): ParsedReplay {
   const demolishExtendedInstances = this.findAllDemolishExtendedInNetworkFrames(data);
 
   if (demolishExtendedInstances.length > 0) {
-    console.log("Found instances of DemolishExtended:", demolishExtendedInstances);
+    console.log("Found instances of DemolishExtended:");
+    const parsedInstances = JSON.parse(demolishExtendedInstances);
+    parsedInstances.forEach((instance, index) => {
+      console.log(`DemolishExtended Instance ${index + 1}:`, JSON.stringify(instance, null, 2));
+    });
   } else {
     console.log("No instances of DemolishExtended found.");
   }
@@ -82,6 +86,7 @@ public parse(data: Uint8Array): ParsedReplay {
     networkErr: this.replay.network_err() ?? null,
   };
 }
+
 
 
   /**
