@@ -25,7 +25,7 @@ export class ReplayParser {
   function extractDemolishExtended(frames: any[]): void {
     for (const frame of frames) {
       if (frame.attribute?.DemolishExtended) {
-        results.push(frame.attribute.DemolishExtended);
+        results.push(frame); // Store the entire frame containing DemolishExtended
       }
     }
   }
@@ -59,7 +59,7 @@ export class ReplayParser {
     partialString = partialString.slice(-overlapSize);
   }
 
-  return JSON.stringify(results); // Output extracted "DemolishExtended" data as a JSON string
+  return JSON.stringify(results); // Output extracted frames containing "DemolishExtended" as a JSON string
 }
 
 /**
@@ -67,10 +67,10 @@ export class ReplayParser {
  */
 public parse(data: Uint8Array): ParsedReplay {
   this.replay = this.mod.parse(data);
-  
+
   // Find all instances of DemolishExtended in network_frames
   const demolishExtendedInstances = this.findAllDemolishExtendedInNetworkFrames(data);
-  
+
   if (demolishExtendedInstances.length > 0) {
     console.log("Found instances of DemolishExtended:", demolishExtendedInstances);
   } else {
@@ -82,6 +82,7 @@ public parse(data: Uint8Array): ParsedReplay {
     networkErr: this.replay.network_err() ?? null,
   };
 }
+
 
   /**
    * Retrieves the replay JSON with formatting options.
