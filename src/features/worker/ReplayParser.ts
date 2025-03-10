@@ -77,15 +77,16 @@ export class ReplayParser {
 /**
  * Parses replay data to filter for actors with specific attributes and logs the results.
  */
-public parse(data: Uint8Array): ParsedReplay {
+public parse(data: Uint8Array): { parsedReplay: ParsedReplay; filteredActors: any[] } {
   this.replay = this.mod.parse(data);
 
   // Find all actors with DemolishExtended or RigidBody attributes
   const filteredActors = this.findSpecificAttributesInUpdatedActors(data);
+  const parsedFilteredActors = JSON.parse(filteredActors);
 
-  if (JSON.parse(filteredActors).length > 0) {
-    console.log(`Found ${JSON.parse(filteredActors).length} matching actors:`);
-    JSON.parse(filteredActors).forEach((actor: any, index: number) => {
+  if (parsedFilteredActors.length > 0) {
+    console.log(`Found ${parsedFilteredActors.length} matching actors:`);
+    parsedFilteredActors.forEach((actor: any, index: number) => {
       console.log(`Actor ${index + 1}:`, actor);
     });
   } else {
@@ -93,8 +94,11 @@ public parse(data: Uint8Array): ParsedReplay {
   }
 
   return {
-    replay: JSON.parse(this.replay.header_json(false)) as Replay,
-    networkErr: this.replay.network_err() ?? null,
+    parsedReplay: {
+      replay: JSON.parse(this.replay.header_json(false)) as Replay,
+      networkErr: this.replay.network_err() ?? null,
+    },
+    filteredActors: parsedFilteredActors,
   };
 }
 
