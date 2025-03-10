@@ -15,19 +15,27 @@ export class ReplayParser {
   /**
    * Searches for all instances of `DemolishExtended` in a large Uint8Array.
    */
-  private findAllDemolishExtendedInLargeUint8Array(data: Uint8Array): string {
+  private findAllDemolishExtendedWithDetails(data: Uint8Array): string {
   const results: any[] = [];
   const decoder = new TextDecoder("utf-8");
   const chunkSize = 1024 * 1024; // 1 MB chunk size
-  const overlapSize = 1023; // Increased overlap size for boundary issues
+  const overlapSize = 1023; // Increased overlap for boundary issues
   let partialString = ""; // Stores decoded data including overlap
 
   function recursiveSearch(obj: any): void {
     if (typeof obj !== "object" || obj === null) return;
-    // Check if the object matches the desired structure
+
+    // If `DemolishExtended` is found, extract related fields
     if (obj.attribute?.DemolishExtended) {
-      results.push(obj);
+      const details = {
+        DemolishExtended: obj.attribute.DemolishExtended,
+        actor_id: obj.actor_id || null,
+        attacker: obj.attacker || null,
+        victim: obj.victim || null,
+      };
+      results.push(details);
     }
+
     // Recursively search nested objects and arrays
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
@@ -40,6 +48,7 @@ export class ReplayParser {
     const chunk = data.subarray(i, i + chunkSize);
     const decodedChunk = decoder.decode(chunk, { stream: true });
     partialString += decodedChunk;
+
     try {
       const startIdx = partialString.indexOf("{");
       const endIdx = partialString.lastIndexOf("}");
@@ -54,10 +63,14 @@ export class ReplayParser {
     } catch (error) {
       console.error("JSON parsing error, moving to the next chunk:", error);
     }
+
+    // Retain the last portion of this chunk for boundary checks with the next one
     partialString = partialString.slice(-overlapSize);
   }
-  return JSON.stringify(results); // Output results as a JSON string
+
+  return JSON.stringify(results); // Output as a JSON string
 }
+
   /**
    * Parses the replay data and looks for all instances of `DemolishExtended`.
    */
