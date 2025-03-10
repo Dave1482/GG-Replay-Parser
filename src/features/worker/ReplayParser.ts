@@ -63,7 +63,7 @@ export class ReplayParser {
 }
 
 /**
- * Parses the replay data and looks for all instances of `DemolishExtended`.
+ * Parses the replay data and logs all instances of `DemolishExtended` individually.
  */
 public parse(data: Uint8Array): ParsedReplay {
   this.replay = this.mod.parse(data);
@@ -72,7 +72,10 @@ public parse(data: Uint8Array): ParsedReplay {
   const demolishExtendedInstances = this.findAllDemolishExtendedInNetworkFrames(data);
 
   if (demolishExtendedInstances.length > 0) {
-    console.log("Found instances of DemolishExtended:", demolishExtendedInstances);
+    console.log(`Found ${demolishExtendedInstances.length} instances of DemolishExtended:`);
+    JSON.parse(demolishExtendedInstances).forEach((instance: any, index: number) => {
+      console.log(`Instance ${index + 1}:`, instance);
+    });
   } else {
     console.log("No instances of DemolishExtended found.");
   }
@@ -82,7 +85,6 @@ public parse(data: Uint8Array): ParsedReplay {
     networkErr: this.replay.network_err() ?? null,
   };
 }
-
 
   /**
    * Retrieves the replay JSON with formatting options.
