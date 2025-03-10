@@ -15,7 +15,7 @@ export class ReplayParser {
   /**
    * Searches for all instances of `DemolishExtended` in a large Uint8Array.
    */
-  private findAllDemolishExtendedInLargeUint8Array(data: Uint8Array): any[] {
+  private findAllDemolishExtendedInLargeUint8ArrayAsJSON(data: Uint8Array): string {
   const results: any[] = [];
   const decoder = new TextDecoder("utf-8");
   const chunkSize = 1024 * 1024; // 1 MB chunk size
@@ -24,14 +24,10 @@ export class ReplayParser {
 
   function recursiveSearch(obj: any): void {
     if (typeof obj !== "object" || obj === null) return;
-
     // Check if the object matches the desired structure
-    if (
-      obj.attribute?.DemolishExtended
-    ) {
+    if (obj.attribute?.DemolishExtended) {
       results.push(obj);
     }
-
     // Recursively search nested objects and arrays
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
@@ -44,7 +40,6 @@ export class ReplayParser {
     const chunk = data.subarray(i, i + chunkSize);
     const decodedChunk = decoder.decode(chunk, { stream: true });
     partialString += decodedChunk;
-
     try {
       const startIdx = partialString.indexOf("{");
       const endIdx = partialString.lastIndexOf("}");
@@ -59,13 +54,10 @@ export class ReplayParser {
     } catch (error) {
       console.error("JSON parsing error, moving to the next chunk:", error);
     }
-
     partialString = partialString.slice(-overlapSize);
   }
-
-  return results;
+  return JSON.stringify(results); // Output results as a JSON string
 }
-
   /**
    * Parses the replay data and looks for all instances of `DemolishExtended`.
    */
