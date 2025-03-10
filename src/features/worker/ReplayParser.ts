@@ -25,7 +25,13 @@ export class ReplayParser {
   function extractDemolishExtended(frames: any[]): void {
     for (const frame of frames) {
       if (frame.attribute?.DemolishExtended) {
-        results.push(frame); // Store the entire frame containing DemolishExtended
+        // Add the full frame (with actor_id, stream_id, etc.) to results
+        results.push({
+          actor_id: frame.actor_id,
+          stream_id: frame.stream_id,
+          object_id: frame.object_id,
+          attribute: frame.attribute
+        });
       }
     }
   }
@@ -59,11 +65,11 @@ export class ReplayParser {
     partialString = partialString.slice(-overlapSize);
   }
 
-  return JSON.stringify(results); // Output extracted frames containing "DemolishExtended" as a JSON string
+  return JSON.stringify(results, null, 2); // Pretty-print the extracted results as a JSON string
 }
 
 /**
- * Parses the replay data and logs all instances of `DemolishExtended` individually.
+ * Parses the replay data, logs all instances like the given example, and exports them.
  */
 public parse(data: Uint8Array): ParsedReplay {
   this.replay = this.mod.parse(data);
@@ -72,10 +78,17 @@ public parse(data: Uint8Array): ParsedReplay {
   const demolishExtendedInstances = this.findAllDemolishExtendedInNetworkFrames(data);
 
   if (demolishExtendedInstances.length > 0) {
-    console.log(`Found ${demolishExtendedInstances.length} instances of DemolishExtended:`);
+    console.log(`Found ${JSON.parse(demolishExtendedInstances).length} instances of DemolishExtended:`);
+
+    // Log each instance individually
     JSON.parse(demolishExtendedInstances).forEach((instance: any, index: number) => {
       console.log(`Instance ${index + 1}:`, instance);
     });
+
+    // Optionally export to a file
+    const filePath = './DemolishExtendedResults.txt';
+    fs.writeFileSync(filePath, demolishExtendedInstances);
+    console.log(`Exported ${JSON.parse(demolishExtendedInstances).length} instances to ${filePath}`);
   } else {
     console.log("No instances of DemolishExtended found.");
   }
