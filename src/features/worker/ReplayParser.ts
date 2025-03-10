@@ -15,7 +15,7 @@ export class ReplayParser {
   /**
    * Searches for all instances of `DemolishExtended` in a large Uint8Array.
    */
-  private findAllDemolishExtended(data: Uint8Array): string {
+  private findAllDemolishExtendedInLargeUint8Array(data: Uint8Array): string {
   const results: any[] = [];
   const decoder = new TextDecoder("utf-8");
   const chunkSize = 1024 * 1024; // 1 MB chunk size
