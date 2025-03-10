@@ -73,8 +73,8 @@ public parse(data: Uint8Array): ParsedReplay {
 
   if (demolishExtendedInstances.length > 0) {
     console.log("Found instances of DemolishExtended:");
-    const parsedInstances = JSON.parse(demolishExtendedInstances);
-    parsedInstances.forEach((instance, index) => {
+    const parsedInstances: any[] = JSON.parse(demolishExtendedInstances); // Type the parsed array as `any[]`
+    parsedInstances.forEach((instance: any, index: number) => {
       console.log(`DemolishExtended Instance ${index + 1}:`, JSON.stringify(instance, null, 2));
     });
   } else {
