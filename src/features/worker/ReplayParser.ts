@@ -18,7 +18,7 @@ export class ReplayParser {
   private findSpecificAttributesInUpdatedActors(data: Uint8Array): string {
   const results: any[] = [];
   const decoder = new TextDecoder("utf-8");
-  const chunkSize = 5 * 1024 * 1024; // 1 MB chunk size
+  const chunkSize = 5 * 1024 * 1024; // 5 MB chunk size
   const overlapSize = 1023; // For boundary issues
   let partialString = ""; // Stores decoded data including overlap
 
@@ -36,31 +36,35 @@ export class ReplayParser {
     partialString += decodedChunk;
 
     try {
+      // Extract and parse valid JSON fragments
       const startIdx = partialString.indexOf("{");
       const endIdx = partialString.lastIndexOf("}");
       if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
         const jsonString = partialString.slice(startIdx, endIdx + 1);
-        const parsedData = JSON.parse(jsonString);
+        try {
+          const parsedData = JSON.parse(jsonString);
 
-        // Navigate to "network_frames" -> "frames" -> "updated_actors" and process
-        if (
-          parsedData.network_frames &&
-          parsedData.network_frames.frames &&
-          Array.isArray(parsedData.network_frames.frames)
-        ) {
-          for (const frame of parsedData.network_frames.frames) {
-            if (frame.updated_actors && Array.isArray(frame.updated_actors)) {
-              extractSpecificAttributes(frame.updated_actors);
+          // Navigate to "network_frames" -> "frames" -> "updated_actors" and process
+          if (
+            parsedData.network_frames &&
+            parsedData.network_frames.frames &&
+            Array.isArray(parsedData.network_frames.frames)
+          ) {
+            for (const frame of parsedData.network_frames.frames) {
+              if (frame.updated_actors && Array.isArray(frame.updated_actors)) {
+                extractSpecificAttributes(frame.updated_actors);
+              }
             }
           }
+        } catch (innerError) {
+          console.error("Inner JSON parsing error, but continuing with valid fragments:", innerError);
         }
-
         partialString = partialString.slice(endIdx + 1); // Keep remaining data
       } else {
         console.log("Skipping incomplete JSON fragment.");
       }
-    } catch (error) {
-      console.error("JSON parsing error, moving to the next chunk:", error);
+    } catch (outerError) {
+      console.error("Outer JSON parsing error, moving to the next chunk:", outerError);
     }
 
     // Retain the last portion of this chunk for boundary checks with the next one
