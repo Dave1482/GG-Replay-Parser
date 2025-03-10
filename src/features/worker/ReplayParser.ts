@@ -18,7 +18,7 @@ export class ReplayParser {
   private findSpecificAttributesInUpdatedActors(data: Uint8Array): string {
   const results: any[] = [];
   const decoder = new TextDecoder("utf-8");
-  const chunkSize = 1024 * 1024; // 1 MB chunk size
+  const chunkSize = 5 * 1024 * 1024; // 1 MB chunk size
   const overlapSize = 1023; // For boundary issues
   let partialString = ""; // Stores decoded data including overlap
 
