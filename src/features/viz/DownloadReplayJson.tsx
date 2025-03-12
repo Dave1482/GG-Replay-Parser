@@ -24,7 +24,6 @@ interface PlayerMapping {
 
 interface GetFilteredJsonDataProps {
   fullJsonData: ReplayYield; // The full replay JSON data
-  prettyPrint: boolean; // Whether to pretty print the results
 }
 
 export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
@@ -41,7 +40,6 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
     setIsLoading(true);
     const actorToPlayer: PlayerMapping = {};
 
-    // Extract actor mappings
     const buildActorMappings = (data: ReplayYield) => {
       const frames = data.network_frames?.frames || [];
 
@@ -62,7 +60,6 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
       });
     };
 
-    // Filter demolition events
     const findDemolitions = (data: ReplayYield) => {
       const demolitionEvents: DemolitionEvent[] = [];
       const seenDemolitions: { [key: string]: number } = {};
@@ -109,7 +106,6 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
       return demolitionEvents;
     };
 
-    // Process data
     buildActorMappings(fullJsonData);
     const demolitions = findDemolitions(fullJsonData);
     setDemolitionEvents(demolitions);
@@ -162,7 +158,6 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
     </div>
   );
 };
-
 
 export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
   const parser = useReplayParser(); // Get the parser instance
