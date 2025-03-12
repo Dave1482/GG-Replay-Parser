@@ -61,11 +61,8 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
     frames.forEach((frame: any, frameIdx: number) => {
       (frame.replications || []).forEach((replication: any) => {
         (replication.value?.updated || []).forEach((update: any) => {
-          if (update.name?.includes("Demolish")) {
-            const demoData =
-              update.value?.demolish ||
-              update.value?.custom_demolish?.demolish ||
-              update.value?.actor?.attribute?.DemolishExtended;
+          if (update.name?.includes("DemolishExtended")) {
+            const demoData = update.value?.actor?.attribute?.DemolishExtended;
 
             if (demoData) {
               const attackerId = demoData.attacker.actor;
