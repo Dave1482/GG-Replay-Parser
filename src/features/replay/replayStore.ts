@@ -2,6 +2,7 @@ import { ParseMode } from "@/stores/uiStore";
 import { create } from "zustand";
 import { ParsedReplay, ParseInput, Replay } from "../worker";
 import { ReplayAnalyzer } from "./ReplayAnalyzer";
+import { DemolitionEvent, useReplayAnalyzer } from "./useReplayAnalyzer";
 
 class ReplayInput {
   constructor(public readonly input: ParseInput) {}
@@ -28,12 +29,6 @@ interface ParseRequest {
 interface ParseArg {
   input: ReplayInput;
 }
-
-export type DemolitionEvent = {
-  attackerName: string;
-  victimName: string;
-  frameNumber: number;
-};
 
 type ParseResult =
   | {
@@ -121,7 +116,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           if (index === state.replays.length - 1) {
             return {
               ...replay,
-              demolitionEvents: events, // Ensure events match the DemolitionEvent[] type
+              demolitionEvents: events, // Attach demolition events to the replay
             };
           }
           return replay;
@@ -178,12 +173,12 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
       // Aggregate demolition events
       if (replay.demolitionEvents) {
         replay.demolitionEvents.forEach((event) => {
-          const { attackerName } = event; // Use the correct property name
-          if (attackerName) {
-            if (!demolitionCounts[attackerName]) {
-              demolitionCounts[attackerName] = 0;
+          const { attacker } = event;
+          if (attacker) {
+            if (!demolitionCounts[attacker]) {
+              demolitionCounts[attacker] = 0;
             }
-            demolitionCounts[attackerName]++;
+            demolitionCounts[attacker]++;
           }
         });
       }

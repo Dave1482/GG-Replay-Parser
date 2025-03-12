@@ -90,7 +90,7 @@ export const Report = () => {
                 <ul>
                     {replay.demolitionEvents.map((event, i) => (
                         <div key={i}>
-                            <p>Attacker: {event.attackerName}</p>
+                            <p>Attacker: {event.attacker}</p>
                             <p>Victim: {event.victimName}</p>
                             <p>Frame: {event.frameNumber}</p>
                         </div>

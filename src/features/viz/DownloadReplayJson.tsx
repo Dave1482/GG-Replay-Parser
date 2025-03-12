@@ -3,51 +3,93 @@ import { useReplayParser, workerQueryOptions } from "@/features/worker";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParseMode, usePrettyPrint, useUiActions } from "@/stores/uiStore";
 import { useIsActionInFlight } from "@/hooks";
-import { ReplayYield, DemolitionEvent } from "../replay/replayStore";
+import { ReplayYield } from "../replay/replayStore";
 import { useState, useEffect } from "react";
-import { ReplayAnalyzer } from "../replay/ReplayAnalyzer";
 
 interface DownloadReplayJsonProps {
   replay: ReplayYield;
 }
 
 export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
-  const parser = useReplayParser(); // Parser instance
-  const { setPrettyPrint } = useUiActions(); // Pretty print toggle action
-  const prettyPrint = usePrettyPrint(); // Pretty print state
+  const parser = useReplayParser(); // Get the parser instance
+  const { setPrettyPrint } = useUiActions(); // Action to toggle pretty print
+  const prettyPrint = usePrettyPrint(); // Current pretty print state
 
-  const [filteredData, setFilteredData] = useState<any[]>([]); // Store filtered demolition data
-  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [filteredDataByReplay, setFilteredDataByReplay] = useState<Record<string, any[]>>({}); // Store filtered data per replay
+  const [isLoading, setIsLoading] = useState(true); // Track loading state
 
-  // Use ReplayAnalyzer to extract demolitions
-  const filterDemolishExtendedFrames = (jsonData: any): DemolitionEvent[] => {
-    const analyzer = new ReplayAnalyzer();
-  
-    // Build actor mappings and find demolitions
-    analyzer.buildActorMappings(jsonData);
-    const demolitions = analyzer.findDemolitions(jsonData);
-  
-    return demolitions; // Ensure it matches DemolitionEvent[]
+  const filterDemolishExtendedFrames = (jsonData: any) => {
+    const filteredFrames = jsonData?.network_frames?.frames?.flatMap((frame: any) =>
+      frame?.updated_actors?.filter((actor: any) => actor?.attribute?.DemolishExtended)
+    );
+    return filteredFrames || [];
   };
 
   useEffect(() => {
     const fetchFilteredData = async () => {
       try {
-        const { data } = await parser().replayJson({ pretty: prettyPrint });
-        const jsonData = JSON.parse(new TextDecoder().decode(data));
-        const demolitions = filterDemolishExtendedFrames(jsonData);
-  
-        // Update local state
-        setFilteredData(demolitions);
+        setIsLoading(true); // Set loading to true while fetching data
+
+        let replayKey: string;
+
+        // Check if replay.input.input is a File or a string
+        if (typeof replay.input.input === "string") {
+          replayKey = replay.input.input; // Use string directly as key
+        } else {
+          // If it's a File, construct the key
+          replayKey = `${replay.input.input.name}_${replay.input.input.lastModified}`;
+        }
+
+        // Check if data for this replay is already fetched
+        if (filteredDataByReplay[replayKey]) {
+          setIsLoading(false); // Data is already available, stop loading
+          return;
+        }
+
+        if (replay.mode === "local") {
+          const { data } = await parser().replayJson({ pretty: prettyPrint });
+          const jsonData = JSON.parse(new TextDecoder().decode(data));
+          const filteredFrames = filterDemolishExtendedFrames(jsonData);
+
+          setFilteredDataByReplay((prev) => ({
+            ...prev,
+            [replayKey]: filteredFrames,
+          }));
+        } else {
+          const params = new URLSearchParams({ pretty: prettyPrint.toString() });
+          const form = new FormData();
+          form.append("file", replay.input.input as File);
+
+          const resp = await fetch(`/api/json?${params}`, { method: "POST", body: form });
+          if (!resp.ok) throw new Error("Edge runtime unable to return JSON");
+
+          const responseData = new Uint8Array(await resp.arrayBuffer());
+          const jsonData = JSON.parse(new TextDecoder().decode(responseData));
+          const filteredFrames = filterDemolishExtendedFrames(jsonData);
+
+          setFilteredDataByReplay((prev) => ({
+            ...prev,
+            [replayKey]: filteredFrames,
+          }));
+        }
+
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error processing replay data:", error);
+        console.error("Error fetching or filtering data:", error);
+        setIsLoading(false);
       }
     };
-  
-    fetchFilteredData();
-  }, [parser, prettyPrint, replay]);
 
-  // Display a loading message until data is ready
+    fetchFilteredData();
+  }, [parser, replay.mode, prettyPrint, replay.input.input]);
+
+  const currentReplayKey =
+    typeof replay.input.input === "string"
+      ? replay.input.input
+      : `${replay.input.input.name}_${replay.input.input.lastModified}`;
+
+  const filteredData = filteredDataByReplay[currentReplayKey] || [];
+
   if (isLoading) {
     return (
       <div className="grid place-items-center">
@@ -64,30 +106,26 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
           className="mr-1 rounded focus:outline focus:outline-2 focus:outline-blue-600"
           type="checkbox"
           checked={prettyPrint}
-          onChange={(e) => setPrettyPrint(e.target.checked)} // Update pretty print state
+          onChange={(e) => setPrettyPrint(e.target.checked)}
         />
         Pretty print
       </label>
 
-      {/* Render Demolitions */}
+      {/* Render Filtered Data */}
       <div>
-        <h3 className="font-bold text-lg">Demolitions:</h3>
+        <h3 className="font-bold text-lg">Filtered Data:</h3>
         {filteredData.length > 0 ? (
-          <ul className="text-sm overflow-auto">
-            {filteredData.map((demo, index) => (
-              <li key={index}>
-                <strong>{demo.attackerName}</strong> demolished <strong>{demo.victimName}</strong> at frame{" "}
-                <strong>{demo.frameNumber}</strong>.
-              </li>
-            ))}
-          </ul>
+          <pre className="text-sm overflow-auto">
+            {JSON.stringify(filteredData, null, prettyPrint ? 2 : 0)}
+          </pre>
         ) : (
-          <p>No demolitions found for the current replay.</p>
+          <p>No filtered data found for the current replay.</p>
         )}
       </div>
     </div>
   );
 };
+
 
 export const DownloadReplayJson = ({ replay }: DownloadReplayJsonProps) => {
   const parser = useReplayParser();
