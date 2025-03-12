@@ -1,4 +1,4 @@
-noimport { downloadData } from "@/utils/downloadData";
+import { downloadData } from "@/utils/downloadData";
 import { useReplayParser, workerQueryOptions } from "@/features/worker";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParseMode, usePrettyPrint, useUiActions } from "@/stores/uiStore";
@@ -65,11 +65,12 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
             const demoData =
               update.value?.demolish ||
               update.value?.custom_demolish?.demolish ||
-              update.value?.DemolishExtended?;
+              update.value?.DemolishExtended? ||
+              update.value?.actor?.attribute?.DemolishExtended?;
 
             if (demoData) {
-              const attackerId = demoData.attacker_actor_id;
-              const victimId = demoData.victim_actor_id;
+              const attackerId = demoData.attacker.actor;
+              const victimId = demoData.victim.actor;
 
               if (attackerId && victimId) {
                 const attackerName =
