@@ -23,7 +23,7 @@ interface PlayerMapping {
 }
 
 interface GetFilteredJsonDataProps {
-  fullJsonData: any; // The full replay JSON data
+  fullJsonData: ReplayYield; // The full replay JSON data
   prettyPrint: boolean; // Whether to pretty print the results
 }
 
