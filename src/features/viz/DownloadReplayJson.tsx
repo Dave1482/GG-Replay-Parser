@@ -143,13 +143,12 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
           <h4 className="font-medium text-md mt-4">Leaderboard:</h4>
           <ul className="list-disc pl-5">
             {Object.entries(
-              demolitionEvents.reduce((counts: any, event) => {
-                counts[event.attackerName] =
-                  (counts[event.attackerName] || 0) + 1;
+              demolitionEvents.reduce((counts: Record<string, number>, event) => {
+                counts[event.attackerName] = (counts[event.attackerName] || 0) + 1;
                 return counts;
               }, {})
             )
-              .sort(([, a], [, b]) => b - a)
+              .sort(([, a], [, b]) => (b as number) - (a as number)) // Explicitly cast as number
               .map(([name, count], index) => (
                 <li key={index}>
                   {name}: {count} demolition{count !== 1 ? "s" : ""}
