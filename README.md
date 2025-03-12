@@ -1,4 +1,4 @@
-# Rocket League Replay Parser (rl-web)
+# Rocket League Replay Parser (GG Replay Parser)
 
 [![CI](https://github.com/Dave1482/GG-Replay-Parser/actions/workflows/ci2.yml/badge.svg)](https://github.com/Dave1482/GG-Replay-Parser/actions/workflows/ci2.yml)
 
