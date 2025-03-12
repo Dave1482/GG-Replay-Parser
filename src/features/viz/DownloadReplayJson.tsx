@@ -126,6 +126,113 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
   );
 };
 
+export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
+  const parser = useReplayParser(); // Get the parser instance
+  const { setPrettyPrint } = useUiActions(); // Action to toggle pretty print
+  const prettyPrint = usePrettyPrint(); // Current pretty print state
+
+  const [dataByReplay, setDataByReplay] = useState<Record<string, any>>({}); // Store full data per replay
+  const [isLoading, setIsLoading] = useState(true); // Track loading state
+
+  useEffect(() => {
+    const fetchFullData = async () => {
+      try {
+        setIsLoading(true); // Set loading to true while fetching data
+
+        let replayKey: string;
+
+        // Check if replay.input.input is a File or a string
+        if (typeof replay.input.input === "string") {
+          replayKey = replay.input.input; // Use string directly as key
+        } else {
+          // If it's a File, construct the key
+          replayKey = `${replay.input.input.name}_${replay.input.input.lastModified}`;
+        }
+
+        // Check if data for this replay is already fetched
+        if (dataByReplay[replayKey]) {
+          setIsLoading(false); // Data is already available, stop loading
+          return;
+        }
+
+        if (replay.mode === "local") {
+          const { data } = await parser().replayJson({ pretty: prettyPrint });
+          const jsonData = JSON.parse(new TextDecoder().decode(data));
+
+          setDataByReplay((prev) => ({
+            ...prev,
+            [replayKey]: jsonData,
+          }));
+        } else {
+          const params = new URLSearchParams({ pretty: prettyPrint.toString() });
+          const form = new FormData();
+          form.append("file", replay.input.input as File);
+
+          const resp = await fetch(`/api/json?${params}`, { method: "POST", body: form });
+          if (!resp.ok) throw new Error("Edge runtime unable to return JSON");
+
+          const responseData = new Uint8Array(await resp.arrayBuffer());
+          const jsonData = JSON.parse(new TextDecoder().decode(responseData));
+
+          setDataByReplay((prev) => ({
+            ...prev,
+            [replayKey]: jsonData,
+          }));
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching or processing data:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchFullData();
+  }, [parser, replay.mode, prettyPrint, replay.input.input]);
+
+  const currentReplayKey =
+    typeof replay.input.input === "string"
+      ? replay.input.input
+      : `${replay.input.input.name}_${replay.input.input.lastModified}`;
+
+  const jsonData = dataByReplay[currentReplayKey] || null;
+
+  if (isLoading) {
+    return (
+      <div className="grid place-items-center">
+        <p className="text-gray-500 text-lg">Loading replay data...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid place-items-center space-y-4">
+      {/* Toggle Pretty Print */}
+      <label>
+        <input
+          className="mr-1 rounded focus:outline focus:outline-2 focus:outline-blue-600"
+          type="checkbox"
+          checked={prettyPrint}
+          onChange={(e) => setPrettyPrint(e.target.checked)}
+        />
+        Pretty print
+      </label>
+
+      {/* Render Full JSON Data */}
+      <div>
+        <h3 className="font-bold text-lg">Replay JSON Data:</h3>
+        {jsonData ? (
+          <pre className="text-sm overflow-auto">
+            {JSON.stringify(jsonData, null, prettyPrint ? 2 : 0)}
+          </pre>
+        ) : (
+          <p>No data found for the current replay.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 export const DownloadReplayJson = ({ replay }: DownloadReplayJsonProps) => {
   const parser = useReplayParser();
