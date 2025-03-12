@@ -1,6 +1,6 @@
 # Rocket League Replay Parser (rl-web)
 
-[![CI](https://github.com/nickbabcock/rl-web/actions/workflows/ci.yml/badge.svg)](https://github.com/nickbabcock/rl-web/actions/workflows/ci.yml)
+[![CI](https://github.com/Dave1482/GG-Replay-Parser/actions/workflows/ci2.yml/badge.svg)](https://github.com/Dave1482/GG-Replay-Parser/actions/workflows/ci2.yml)
 
 The Rocket League Replay Parser decodes a replay and presents a small array of
 statistics. This tech demo shows the versatility of
