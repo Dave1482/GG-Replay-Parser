@@ -65,8 +65,7 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
             const demoData =
               update.value?.demolish ||
               update.value?.custom_demolish?.demolish ||
-              update.value?.DemolishExtended? ||
-              update.value?.actor?.attribute?.DemolishExtended?;
+              update.value?.actor?.attribute?.DemolishExtended;
 
             if (demoData) {
               const attackerId = demoData.attacker.actor;
