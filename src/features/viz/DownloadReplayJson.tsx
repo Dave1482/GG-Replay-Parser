@@ -10,118 +10,168 @@ interface DownloadReplayJsonProps {
   replay: ReplayYield;
 }
 
-export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
-  const parser = useReplayParser(); // Get the parser instance
-  const { setPrettyPrint } = useUiActions(); // Action to toggle pretty print
-  const prettyPrint = usePrettyPrint(); // Current pretty print state
+//import React, { useEffect, useState } from "react";
 
-  const [filteredDataByReplay, setFilteredDataByReplay] = useState<Record<string, any[]>>({}); // Store filtered data per replay
-  const [isLoading, setIsLoading] = useState(true); // Track loading state
+interface DemolitionEvent {
+  attackerName: string;
+  victimName: string;
+  frameNumber: number;
+}
 
-  const filterDemolishExtendedFrames = (jsonData: any) => {
-    const filteredFrames = jsonData?.network_frames?.frames?.flatMap((frame: any) =>
-      frame?.updated_actors?.filter((actor: any) => actor?.attribute?.DemolishExtended)
-    );
-    return filteredFrames || [];
-  };
+interface PlayerMapping {
+  [actorId: string]: string;
+}
+
+interface GetFilteredJsonDataProps {
+  fullJsonData: any; // Pass the full JSON data as a prop
+  prettyPrint: boolean; // Pretty print toggle
+}
+
+export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
+  fullJsonData,
+  prettyPrint,
+}) => {
+  const [demolitionEvents, setDemolitionEvents] = useState<DemolitionEvent[]>(
+    []
+  ); // Store the found demolition events
+
+  const [actorToPlayer, setActorToPlayer] = useState<PlayerMapping>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFilteredData = async () => {
-      try {
-        setIsLoading(true); // Set loading to true while fetching data
+    if (!fullJsonData) return;
 
-        let replayKey: string;
+    const actorMappings: PlayerMapping = {};
+    const seenDemolitions: { [key: string]: number } = {};
 
-        // Check if replay.input.input is a File or a string
-        if (typeof replay.input.input === "string") {
-          replayKey = replay.input.input; // Use string directly as key
-        } else {
-          // If it's a File, construct the key
-          replayKey = `${replay.input.input.name}_${replay.input.input.lastModified}`;
-        }
+    // Build Actor Mappings
+    const buildActorMappings = (data: any): PlayerMapping => {
+      const frames = data?.network_frames?.frames || [];
 
-        // Check if data for this replay is already fetched
-        if (filteredDataByReplay[replayKey]) {
-          setIsLoading(false); // Data is already available, stop loading
-          return;
-        }
+      frames.forEach((frame: any) => {
+        (frame.replications || []).forEach((replication: any) => {
+          if (!replication?.value?.updated) return;
 
-        if (replay.mode === "local") {
-          const { data } = await parser().replayJson({ pretty: prettyPrint });
-          const jsonData = JSON.parse(new TextDecoder().decode(data));
-          const filteredFrames = filterDemolishExtendedFrames(jsonData);
+          const actorId = replication.actor_id?.value;
+          if (!actorId) return;
 
-          setFilteredDataByReplay((prev) => ({
-            ...prev,
-            [replayKey]: filteredFrames,
-          }));
-        } else {
-          const params = new URLSearchParams({ pretty: prettyPrint.toString() });
-          const form = new FormData();
-          form.append("file", replay.input.input as File);
+          replication.value.updated.forEach((update: any) => {
+            if (update.name === "Engine.PlayerReplicationInfo:PlayerName") {
+              const playerName = update.value?.string;
+              if (playerName) {
+                actorMappings[actorId] = playerName;
+              }
+            }
+          });
+        });
+      });
 
-          const resp = await fetch(`/api/json?${params}`, { method: "POST", body: form });
-          if (!resp.ok) throw new Error("Edge runtime unable to return JSON");
-
-          const responseData = new Uint8Array(await resp.arrayBuffer());
-          const jsonData = JSON.parse(new TextDecoder().decode(responseData));
-          const filteredFrames = filterDemolishExtendedFrames(jsonData);
-
-          setFilteredDataByReplay((prev) => ({
-            ...prev,
-            [replayKey]: filteredFrames,
-          }));
-        }
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching or filtering data:", error);
-        setIsLoading(false);
-      }
+      return actorMappings;
     };
 
-    fetchFilteredData();
-  }, [parser, replay.mode, prettyPrint, replay.input.input]);
+    // Find Demolitions
+    const findDemolitions = (data: any): DemolitionEvent[] => {
+      const demolitionEvents: DemolitionEvent[] = [];
+      const frames = data?.network_frames?.frames || [];
 
-  const currentReplayKey =
-    typeof replay.input.input === "string"
-      ? replay.input.input
-      : `${replay.input.input.name}_${replay.input.input.lastModified}`;
+      frames.forEach((frame: any, frameIdx: number) => {
+        (frame.replications || []).forEach((replication: any) => {
+          (replication.value?.updated || []).forEach((update: any) => {
+            if (update.name?.includes("Demolish")) {
+              const demoData =
+                update.value?.demolish ||
+                update.value?.custom_demolish?.demolish ||
+                update.value?.custom_demolish_extended?.custom_demolish
+                  ?.demolish;
 
-  const filteredData = filteredDataByReplay[currentReplayKey] || [];
+              if (demoData) {
+                const attackerId = demoData.attacker_actor_id;
+                const victimId = demoData.victim_actor_id;
+
+                if (attackerId && victimId) {
+                  const attackerName =
+                    actorMappings[attackerId] || `Unknown(${attackerId})`;
+                  const victimName =
+                    actorMappings[victimId] || `Unknown(${victimId})`;
+
+                  const demoKey = `${attackerName}-${victimName}`;
+                  const lastFrame = seenDemolitions[demoKey] || -999;
+
+                  if (frameIdx - lastFrame > 120) {
+                    seenDemolitions[demoKey] = frameIdx;
+                    demolitionEvents.push({
+                      attackerName,
+                      victimName,
+                      frameNumber: frameIdx,
+                    });
+                  }
+                }
+              }
+            }
+          });
+        });
+      });
+
+      return demolitionEvents;
+    };
+
+    // Process the full JSON data
+    setIsLoading(true);
+    const mappings = buildActorMappings(fullJsonData);
+    setActorToPlayer(mappings);
+    const demolitions = findDemolitions(fullJsonData);
+    setDemolitionEvents(demolitions);
+    setIsLoading(false);
+  }, [fullJsonData]);
 
   if (isLoading) {
     return (
       <div className="grid place-items-center">
-        <p className="text-gray-500 text-lg">Loading filtered data...</p>
+        <p className="text-gray-500 text-lg">Processing data...</p>
       </div>
     );
   }
 
   return (
     <div className="grid place-items-center space-y-4">
-      {/* Toggle Pretty Print */}
-      <label>
-        <input
-          className="mr-1 rounded focus:outline focus:outline-2 focus:outline-blue-600"
-          type="checkbox"
-          checked={prettyPrint}
-          onChange={(e) => setPrettyPrint(e.target.checked)}
-        />
-        Pretty print
-      </label>
+      <h3 className="font-bold text-lg">Demolition Summary:</h3>
+      {demolitionEvents.length > 0 ? (
+        <div>
+          <h4 className="font-medium text-md">Chronological Events:</h4>
+          <ul className="list-disc pl-5">
+            {demolitionEvents.map((event, index) => (
+              <li key={index}>
+                Frame {event.frameNumber}: {event.attackerName} →{" "}
+                {event.victimName}
+              </li>
+            ))}
+          </ul>
 
-      {/* Render Filtered Data */}
-      <div>
-        <h3 className="font-bold text-lg">Filtered Data:</h3>
-        {filteredData.length > 0 ? (
-          <pre className="text-sm overflow-auto">
-            {JSON.stringify(filteredData, null, prettyPrint ? 2 : 0)}
-          </pre>
-        ) : (
-          <p>No filtered data found for the current replay.</p>
-        )}
-      </div>
+          <h4 className="font-medium text-md mt-4">Leaderboard:</h4>
+          <ul className="list-disc pl-5">
+            {Object.entries(
+              demolitionEvents.reduce((counts: any, event) => {
+                counts[event.attackerName] =
+                  (counts[event.attackerName] || 0) + 1;
+                return counts;
+              }, {})
+            )
+              .sort(([, a], [, b]) => b - a)
+              .map(([name, count], index) => (
+                <li key={index}>
+                  {name}: {count} demolition{count !== 1 ? "s" : ""}
+                </li>
+              ))}
+          </ul>
+        </div>
+      ) : (
+        <p>No demolitions found in this replay.</p>
+      )}
+
+      <h4 className="font-medium text-md mt-4">Full Actor Mappings:</h4>
+      <pre className="text-sm overflow-auto">
+        {JSON.stringify(actorToPlayer, null, prettyPrint ? 2 : 0)}
+      </pre>
     </div>
   );
 };
