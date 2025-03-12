@@ -23,8 +23,8 @@ interface PlayerMapping {
 }
 
 interface GetFilteredJsonDataProps {
-  fullJsonData: any; // Pass the full JSON data as a prop
-  prettyPrint: boolean; // Pretty print toggle
+  fullJsonData: any; // The full replay JSON data
+  prettyPrint: boolean; // Whether to pretty print the results
 }
 
 export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
@@ -33,45 +33,40 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
 }) => {
   const [demolitionEvents, setDemolitionEvents] = useState<DemolitionEvent[]>(
     []
-  ); // Store the found demolition events
-
-  const [actorToPlayer, setActorToPlayer] = useState<PlayerMapping>({});
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!fullJsonData) return;
 
-    const actorMappings: PlayerMapping = {};
-    const seenDemolitions: { [key: string]: number } = {};
+    setIsLoading(true);
+    const actorToPlayer: PlayerMapping = {};
 
-    // Build Actor Mappings
-    const buildActorMappings = (data: any): PlayerMapping => {
+    // Extract actor mappings
+    const buildActorMappings = (data: any) => {
       const frames = data?.network_frames?.frames || [];
 
       frames.forEach((frame: any) => {
         (frame.replications || []).forEach((replication: any) => {
-          if (!replication?.value?.updated) return;
-
           const actorId = replication.actor_id?.value;
-          if (!actorId) return;
+          if (!actorId || !replication?.value?.updated) return;
 
           replication.value.updated.forEach((update: any) => {
             if (update.name === "Engine.PlayerReplicationInfo:PlayerName") {
               const playerName = update.value?.string;
               if (playerName) {
-                actorMappings[actorId] = playerName;
+                actorToPlayer[actorId] = playerName;
               }
             }
           });
         });
       });
-
-      return actorMappings;
     };
 
-    // Find Demolitions
-    const findDemolitions = (data: any): DemolitionEvent[] => {
+    // Find demolition events
+    const findDemolitions = (data: any) => {
       const demolitionEvents: DemolitionEvent[] = [];
+      const seenDemolitions: { [key: string]: number } = {};
       const frames = data?.network_frames?.frames || [];
 
       frames.forEach((frame: any, frameIdx: number) => {
@@ -90,9 +85,9 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
 
                 if (attackerId && victimId) {
                   const attackerName =
-                    actorMappings[attackerId] || `Unknown(${attackerId})`;
+                    actorToPlayer[attackerId] || `Unknown(${attackerId})`;
                   const victimName =
-                    actorMappings[victimId] || `Unknown(${victimId})`;
+                    actorToPlayer[victimId] || `Unknown(${victimId})`;
 
                   const demoKey = `${attackerName}-${victimName}`;
                   const lastFrame = seenDemolitions[demoKey] || -999;
@@ -115,10 +110,8 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
       return demolitionEvents;
     };
 
-    // Process the full JSON data
-    setIsLoading(true);
-    const mappings = buildActorMappings(fullJsonData);
-    setActorToPlayer(mappings);
+    // Process data
+    buildActorMappings(fullJsonData);
     const demolitions = findDemolitions(fullJsonData);
     setDemolitionEvents(demolitions);
     setIsLoading(false);
@@ -167,14 +160,10 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
       ) : (
         <p>No demolitions found in this replay.</p>
       )}
-
-      <h4 className="font-medium text-md mt-4">Full Actor Mappings:</h4>
-      <pre className="text-sm overflow-auto">
-        {JSON.stringify(actorToPlayer, null, prettyPrint ? 2 : 0)}
-      </pre>
     </div>
   );
 };
+
 
 export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
   const parser = useReplayParser(); // Get the parser instance
