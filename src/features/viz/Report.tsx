@@ -66,7 +66,7 @@ export const Report = () => {
                 onPageChange={setCurrentPage}
             />
             <DownloadReplayJson replay={replay} />
-            <GetFilteredJsonData fullJsonData={replay} />
+            <GetFilteredJsonData replay={replay} />
             {stats !== undefined && (
                 <Description
                     gameType={replay.data.game_type}
