@@ -29,7 +29,6 @@ interface GetFilteredJsonDataProps {
 
 export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
   fullJsonData,
-  prettyPrint,
 }) => {
   const [demolitionEvents, setDemolitionEvents] = useState<DemolitionEvent[]>(
     []
@@ -43,15 +42,15 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
     const actorToPlayer: PlayerMapping = {};
 
     // Extract actor mappings
-    const buildActorMappings = (data: any) => {
-      const frames = data?.network_frames?.frames || [];
+    const buildActorMappings = (data: ReplayYield) => {
+      const frames = data.network_frames?.frames || [];
 
-      frames.forEach((frame: any) => {
-        (frame.replications || []).forEach((replication: any) => {
+      frames.forEach((frame) => {
+        (frame.replications || []).forEach((replication) => {
           const actorId = replication.actor_id?.value;
           if (!actorId || !replication?.value?.updated) return;
 
-          replication.value.updated.forEach((update: any) => {
+          replication.value.updated.forEach((update) => {
             if (update.name === "Engine.PlayerReplicationInfo:PlayerName") {
               const playerName = update.value?.string;
               if (playerName) {
@@ -63,15 +62,15 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
       });
     };
 
-    // Find demolition events
-    const findDemolitions = (data: any) => {
+    // Filter demolition events
+    const findDemolitions = (data: ReplayYield) => {
       const demolitionEvents: DemolitionEvent[] = [];
       const seenDemolitions: { [key: string]: number } = {};
-      const frames = data?.network_frames?.frames || [];
+      const frames = data.network_frames?.frames || [];
 
-      frames.forEach((frame: any, frameIdx: number) => {
-        (frame.replications || []).forEach((replication: any) => {
-          (replication.value?.updated || []).forEach((update: any) => {
+      frames.forEach((frame, frameIdx) => {
+        (frame.replications || []).forEach((replication) => {
+          (replication.value?.updated || []).forEach((update) => {
             if (update.name?.includes("Demolish")) {
               const demoData =
                 update.value?.demolish ||
@@ -144,11 +143,12 @@ export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
           <ul className="list-disc pl-5">
             {Object.entries(
               demolitionEvents.reduce((counts: Record<string, number>, event) => {
-                counts[event.attackerName] = (counts[event.attackerName] || 0) + 1;
+                counts[event.attackerName] =
+                  (counts[event.attackerName] || 0) + 1;
                 return counts;
               }, {})
             )
-              .sort(([, a], [, b]) => (b as number) - (a as number)) // Explicitly cast as number
+              .sort(([, a], [, b]) => b - a)
               .map(([name, count], index) => (
                 <li key={index}>
                   {name}: {count} demolition{count !== 1 ? "s" : ""}
