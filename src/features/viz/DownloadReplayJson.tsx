@@ -23,94 +23,119 @@ interface PlayerMapping {
 }
 
 interface GetFilteredJsonDataProps {
-  fullJsonData: ReplayYield; // The full replay JSON data
+  replay: ReplayYield; // The full replay JSON data
 }
 
-export const GetFilteredJsonData: React.FC<GetFilteredJsonDataProps> = ({
-  fullJsonData,
-}) => {
+export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
+  const parser = useReplayParser(); // Get the parser instance
   const [demolitionEvents, setDemolitionEvents] = useState<DemolitionEvent[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!fullJsonData) return;
-
-    setIsLoading(true);
+  const extractDemolitionEvents = (jsonData: any) => {
     const actorToPlayer: PlayerMapping = {};
+    const demolitionEvents: DemolitionEvent[] = [];
+    const seenDemolitions: { [key: string]: number } = {};
 
-    const buildActorMappings = (data: ReplayYield) => {
-      const frames = data.network_frames?.frames || [];
+    // Build actor-to-player mapping
+    const frames = jsonData?.network_frames?.frames || [];
+    frames.forEach((frame: any) => {
+      (frame.replications || []).forEach((replication: any) => {
+        const actorId = replication.actor_id?.value;
+        if (!actorId || !replication?.value?.updated) return;
 
-      frames.forEach((frame) => {
-        (frame.replications || []).forEach((replication) => {
-          const actorId = replication.actor_id?.value;
-          if (!actorId || !replication?.value?.updated) return;
-
-          replication.value.updated.forEach((update) => {
-            if (update.name === "Engine.PlayerReplicationInfo:PlayerName") {
-              const playerName = update.value?.string;
-              if (playerName) {
-                actorToPlayer[actorId] = playerName;
-              }
+        replication.value.updated.forEach((update: any) => {
+          if (update.name === "Engine.PlayerReplicationInfo:PlayerName") {
+            const playerName = update.value?.string;
+            if (playerName) {
+              actorToPlayer[actorId] = playerName;
             }
-          });
+          }
         });
       });
-    };
+    });
 
-    const findDemolitions = (data: ReplayYield) => {
-      const demolitionEvents: DemolitionEvent[] = [];
-      const seenDemolitions: { [key: string]: number } = {};
-      const frames = data.network_frames?.frames || [];
+    // Detect demolitions
+    frames.forEach((frame: any, frameIdx: number) => {
+      (frame.replications || []).forEach((replication: any) => {
+        (replication.value?.updated || []).forEach((update: any) => {
+          if (update.name?.includes("Demolish")) {
+            const demoData =
+              update.value?.demolish ||
+              update.value?.custom_demolish?.demolish ||
+              update.value?.custom_demolish_extended?.custom_demolish?.demolish;
 
-      frames.forEach((frame, frameIdx) => {
-        (frame.replications || []).forEach((replication) => {
-          (replication.value?.updated || []).forEach((update) => {
-            if (update.name?.includes("Demolish")) {
-              const demoData =
-                update.value?.demolish ||
-                update.value?.custom_demolish?.demolish ||
-                update.value?.custom_demolish_extended?.custom_demolish
-                  ?.demolish;
+            if (demoData) {
+              const attackerId = demoData.attacker_actor_id;
+              const victimId = demoData.victim_actor_id;
 
-              if (demoData) {
-                const attackerId = demoData.attacker_actor_id;
-                const victimId = demoData.victim_actor_id;
+              if (attackerId && victimId) {
+                const attackerName =
+                  actorToPlayer[attackerId] || `Unknown(${attackerId})`;
+                const victimName =
+                  actorToPlayer[victimId] || `Unknown(${victimId})`;
 
-                if (attackerId && victimId) {
-                  const attackerName =
-                    actorToPlayer[attackerId] || `Unknown(${attackerId})`;
-                  const victimName =
-                    actorToPlayer[victimId] || `Unknown(${victimId})`;
+                const demoKey = `${attackerName}-${victimName}`;
+                const lastFrame = seenDemolitions[demoKey] || -999;
 
-                  const demoKey = `${attackerName}-${victimName}`;
-                  const lastFrame = seenDemolitions[demoKey] || -999;
-
-                  if (frameIdx - lastFrame > 120) {
-                    seenDemolitions[demoKey] = frameIdx;
-                    demolitionEvents.push({
-                      attackerName,
-                      victimName,
-                      frameNumber: frameIdx,
-                    });
-                  }
+                if (frameIdx - lastFrame > 120) {
+                  seenDemolitions[demoKey] = frameIdx;
+                  demolitionEvents.push({
+                    attackerName,
+                    victimName,
+                    frameNumber: frameIdx,
+                  });
                 }
               }
             }
-          });
+          }
         });
       });
+    });
 
-      return demolitionEvents;
+    return demolitionEvents;
+  };
+
+  useEffect(() => {
+    const fetchDemolitionEvents = async () => {
+      try {
+        setIsLoading(true);
+
+        let jsonData: any;
+
+        // Fetch JSON data depending on the replay mode
+        if (replay.mode === "local") {
+          const { data } = await parser().replayJson({ pretty: false });
+          jsonData = JSON.parse(new TextDecoder().decode(data));
+        } else {
+          const form = new FormData();
+          form.append("file", replay.input.input);
+
+          const resp = await fetch("/api/json", {
+            method: "POST",
+            body: form,
+          });
+
+          if (!resp.ok) throw new Error("Failed to fetch JSON data");
+
+          const responseData = new Uint8Array(await resp.arrayBuffer());
+          jsonData = JSON.parse(new TextDecoder().decode(responseData));
+        }
+
+        // Process demolition events
+        const demolitions = extractDemolitionEvents(jsonData);
+        setDemolitionEvents(demolitions);
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching or processing replay data:", error);
+        setIsLoading(false);
+      }
     };
 
-    buildActorMappings(fullJsonData);
-    const demolitions = findDemolitions(fullJsonData);
-    setDemolitionEvents(demolitions);
-    setIsLoading(false);
-  }, [fullJsonData]);
+    fetchDemolitionEvents();
+  }, [parser, replay]);
 
   if (isLoading) {
     return (
