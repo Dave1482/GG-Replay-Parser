@@ -1,4 +1,4 @@
-import { downloadData } from "@/utils/downloadData";
+noimport { downloadData } from "@/utils/downloadData";
 import { useReplayParser, workerQueryOptions } from "@/features/worker";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParseMode, usePrettyPrint, useUiActions } from "@/stores/uiStore";
@@ -50,6 +50,7 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
             const playerName = update.value?.string;
             if (playerName) {
               actorToPlayer[actorId] = playerName;
+              console.log(`Processing actorId: ${playerName} = ${actorId}`); // Output actorId to console
             }
           }
         });
@@ -64,7 +65,7 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
             const demoData =
               update.value?.demolish ||
               update.value?.custom_demolish?.demolish ||
-              update.value?.custom_demolish_extended?.custom_demolish?.demolish;
+              update.value?.DemolishExtended?;
 
             if (demoData) {
               const attackerId = demoData.attacker_actor_id;
