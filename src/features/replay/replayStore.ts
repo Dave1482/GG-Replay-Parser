@@ -1,6 +1,7 @@
 import { ParseMode } from "@/stores/uiStore";
 import { create } from "zustand";
 import { ParsedReplay, ParseInput, Replay } from "../worker";
+import { ReplayAnalyzer } from "./ReplayAnalyzer";
 
 class ReplayInput {
   constructor(public readonly input: ParseInput) {}
@@ -28,6 +29,12 @@ interface ParseArg {
   input: ReplayInput;
 }
 
+export type DemolitionEvent = {
+  attackerName: string;
+  victimName: string;
+  frameNumber: number;
+};
+
 type ParseResult =
   | {
       kind: "success";
@@ -43,6 +50,7 @@ export interface ReplayYield extends ParseArg {
   data: Replay;
   networkErr: string | null;
   mode: ParseMode;
+  demolitionEvents?: DemolitionEvent[]; // Added this line for demolition events
 }
 
 interface AggregateStats {
@@ -52,6 +60,7 @@ interface AggregateStats {
   winPercentage: number;
   team0Wins: number;
   team1Wins: number;
+  demolitionCounts: Record<string, number>; // Add this line
 }
 
 interface ReplayStore {
@@ -62,6 +71,7 @@ interface ReplayStore {
     parseError: (error: unknown, req: ParseRequest) => void;
     parsed: (data: ParsedReplay, mode: ParseMode, req: ParseRequest) => void;
     clearReplays: () => void;
+    analyzeReplay: (content: string) => void; // Added this line for ReplayAnalyzer
   };
 }
 
@@ -86,6 +96,7 @@ const useReplayStore = create<ReplayStore>()((set) => ({
           ...rest,
           mode,
           input: new ReplayInput(input),
+          demolitionEvents: [], // Initialize demolition events array
         };
 
         const updatedReplays = [...state.replays, newReplay];
@@ -99,6 +110,24 @@ const useReplayStore = create<ReplayStore>()((set) => ({
       });
     },
     clearReplays: () => set(() => ({ replays: [], aggregateStats: null })),
+    analyzeReplay: (content: string) => {
+      const analyzer = new ReplayAnalyzer();
+      const events = analyzer.findDemolitions(JSON.parse(content));
+    
+      console.log("Demolition events:", events);
+    
+      set((state) => ({
+        replays: state.replays.map((replay, index) => {
+          if (index === state.replays.length - 1) {
+            return {
+              ...replay,
+              demolitionEvents: events, // Ensure events match the DemolitionEvent[] type
+            };
+          }
+          return replay;
+        }),
+      }));
+    },
   },
 }));
 
@@ -111,6 +140,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
             winPercentage: 0,
             team0Wins: 0,
             team1Wins: 0,
+            demolitionCounts: {},
         };
     }
 
@@ -119,7 +149,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
     let wins = 0;
     let team0Wins = 0;
     let team1Wins = 0;
-
+    const demolitionCounts: Record<string, number> = {}; // Store demo counts per player
     replays.forEach((replay) => {
         const team0Score = replay.data.properties.Team0Score || 0;
         const team1Score = replay.data.properties.Team1Score || 0;
@@ -145,6 +175,18 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
             });
             totalScore += gameTotal;
         }
+      // Aggregate demolition events
+      if (replay.demolitionEvents) {
+        replay.demolitionEvents.forEach((event) => {
+          const { attackerName } = event; // Use the correct property name
+          if (attackerName) {
+            if (!demolitionCounts[attackerName]) {
+              demolitionCounts[attackerName] = 0;
+            }
+            demolitionCounts[attackerName]++;
+          }
+        });
+      }
     });
 
     return {
@@ -154,6 +196,7 @@ const calculateAggregateStats = (replays: ReplayYield[]): AggregateStats => {
         winPercentage: Math.round((wins / replays.length) * 100),
         team0Wins: Math.round(team0Wins),
         team1Wins: Math.round(team1Wins),
+        demolitionCounts, // Return the counts of demos per player
     };
 };
 
