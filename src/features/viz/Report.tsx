@@ -3,7 +3,7 @@ import { Graph } from "./Graph";
 import { Description } from "./Description";
 import { TeamScores } from "./TeamScores";
 import { DownloadReplayJson } from "./DownloadReplayJson";
-import { GetFilteredJsonData, GetFullJsonData } from "./DownloadReplayJson";
+import { GetFilteredJsonData } from "./DownloadReplayJson";
 import { AggregateStats } from "./AggregateStats";
 import { useReplays, useAggregateStats } from "../replay/replayStore"; // Updated imports
 
