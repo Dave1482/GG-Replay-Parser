@@ -33,50 +33,53 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  const extractDemolitionEvents = (jsonData: any) => {
-    const actorToPlayer: PlayerMapping = {};
-    const demolitionEvents: DemolitionEvent[] = [];
-    const seenDemolitions: { [key: string]: number } = {};
-
-    // Build actor-to-player mapping
+  export const extractDemolishExtendedEvents = (jsonData: any) => {
+    const actorToPlayer: Record<string, string> = {};
+    const seenDemolitions: Record<string, number> = {};
+    const demolitionEvents: {
+      attackerName: string;
+      victimName: string;
+      frameNumber: number;
+    }[] = [];
+  
     const frames = jsonData?.network_frames?.frames || [];
+  
+    // Build actor-to-player mapping
     frames.forEach((frame: any) => {
       (frame.replications || []).forEach((replication: any) => {
         const actorId = replication.actor_id?.value;
         if (!actorId || !replication?.value?.updated) return;
-
+  
         replication.value.updated.forEach((update: any) => {
           if (update.name === "Engine.PlayerReplicationInfo:PlayerName") {
             const playerName = update.value?.string;
             if (playerName) {
               actorToPlayer[actorId] = playerName;
-              console.log(`Processing actorId: ${playerName} = ${actorId}`); // Output actorId to console
             }
           }
         });
       });
     });
-
-    // Detect demolitions
+  
+    // Extract demolition events
     frames.forEach((frame: any, frameIdx: number) => {
       (frame.replications || []).forEach((replication: any) => {
         (replication.value?.updated || []).forEach((update: any) => {
           if (update.name?.includes("DemolishExtended")) {
             const demoData = update.value?.actor?.attribute?.DemolishExtended;
-
             if (demoData) {
               const attackerId = demoData.attacker.actor;
               const victimId = demoData.victim.actor;
-
+  
               if (attackerId && victimId) {
                 const attackerName =
                   actorToPlayer[attackerId] || `Unknown(${attackerId})`;
                 const victimName =
                   actorToPlayer[victimId] || `Unknown(${victimId})`;
-
+  
                 const demoKey = `${attackerName}-${victimName}`;
                 const lastFrame = seenDemolitions[demoKey] || -999;
-
+  
                 if (frameIdx - lastFrame > 120) {
                   seenDemolitions[demoKey] = frameIdx;
                   demolitionEvents.push({
@@ -92,47 +95,45 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
       });
     });
 
-    return demolitionEvents;
-  };
+  return demolitionEvents;
+};
+
 
   useEffect(() => {
-    const fetchDemolitionEvents = async () => {
+    const fetchFilteredData = async () => {
       try {
         setIsLoading(true);
-
+  
         let jsonData: any;
-
-        // Fetch JSON data depending on the replay mode
+  
         if (replay.mode === "local") {
           const { data } = await parser().replayJson({ pretty: false });
           jsonData = JSON.parse(new TextDecoder().decode(data));
         } else {
           const form = new FormData();
           form.append("file", replay.input.input);
-
-          const resp = await fetch("/api/json", {
-            method: "POST",
-            body: form,
-          });
-
+          const resp = await fetch("/api/json", { method: "POST", body: form });
           if (!resp.ok) throw new Error("Failed to fetch JSON data");
-
+  
           const responseData = new Uint8Array(await resp.arrayBuffer());
           jsonData = JSON.parse(new TextDecoder().decode(responseData));
         }
-
-        // Process demolition events
-        const demolitions = extractDemolitionEvents(jsonData);
-        setDemolitionEvents(demolitions);
-
+  
+        // Extract and set demolition events
+        const demolitions = extractDemolishExtendedEvents(jsonData);
+        setFilteredDataByReplay((prev) => ({
+          ...prev,
+          [replay.input.input]: demolitions,
+        }));
+  
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching or processing replay data:", error);
         setIsLoading(false);
       }
     };
-
-    fetchDemolitionEvents();
+  
+    fetchFilteredData();
   }, [parser, replay]);
 
   if (isLoading) {
