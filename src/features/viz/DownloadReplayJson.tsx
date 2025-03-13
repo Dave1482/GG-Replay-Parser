@@ -10,172 +10,23 @@ interface DownloadReplayJsonProps {
   replay: ReplayYield;
 }
 
-//import React, { useEffect, useState } from "react";
-
-interface DemolitionEvent {
-  attackerName: string;
-  victimName: string;
-  frameNumber: number;
-}
-
-interface PlayerMapping {
-  [actorId: string]: string;
-}
-
-interface GetFilteredJsonDataProps {
-  replay: ReplayYield; // The full replay JSON data
-}
-
 export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
-  const parser = useReplayParser(); // Get the parser instance
-  const [demolitionEvents, setDemolitionEvents] = useState<DemolitionEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const extractDemolishExtendedEvents = (jsonData: any) => {
-    console.log("Extracting demolish extended events from JSON data..."); // Debug
-    const actorToPlayer: Record<string, string> = {};
-    const seenDemolitions: Record<string, number> = {};
-    const demolitionEvents: DemolitionEvent[] = [];
-    const frames = jsonData?.network_frames?.frames || [];
-
-    console.log("Frames to process:", frames.length); // Debug
-
-    // Build actor-to-player mapping
-    frames.forEach((frame: any) => {
-      (frame.replications || []).forEach((replication: any) => {
-        const actorId = replication.actor_id?.value;
-        if (!actorId || !replication?.value?.updated) return;
-
-        replication.value.updated.forEach((update: any) => {
-          if (update.name === "Engine.PlayerReplicationInfo:PlayerName") {
-            const playerName = update.value?.string;
-            if (playerName) {
-              actorToPlayer[actorId] = playerName;
-              console.log(`Mapped actor ID ${actorId} to player name: ${playerName}`); // Debug
-            }
-          }
-        });
-      });
-    });
-
-    console.log("Actor to player mapping complete:", actorToPlayer); // Debug
-
-    // Extract demolition events
-    frames.forEach((frame: any, frameIdx: number) => {
-      (frame.replications || []).forEach((replication: any) => {
-        (replication.value?.updated || []).forEach((update: any) => {
-          if (update.name?.includes("DemolishExtended")) {
-            const demoData = update.value?.actor?.attribute?.DemolishExtended;
-            if (demoData) {
-              const attackerId = demoData.attacker.actor;
-              const victimId = demoData.victim.actor;
-
-              if (attackerId && victimId) {
-                const attackerName = actorToPlayer[attackerId] || `Unknown(${attackerId})`;
-                const victimName = actorToPlayer[victimId] || `Unknown(${victimId})`;
-
-                const demoKey = `${attackerName}-${victimName}`;
-                const lastFrame = seenDemolitions[demoKey] || -999;
-
-                if (frameIdx - lastFrame > 120) {
-                  seenDemolitions[demoKey] = frameIdx;
-                  demolitionEvents.push({
-                    attackerName,
-                    victimName,
-                    frameNumber: frameIdx,
-                  });
-
-                  console.log(
-                    `Demolition event added: Attacker = ${attackerName}, Victim = ${victimName}, Frame = ${frameIdx}`
-                  ); // Debug
-                }
-              }
-            }
-          }
-        });
-      });
-    });
-
-    console.log("Extracted demolition events:", demolitionEvents); // Debug
-    return demolitionEvents;
-  };
-
-  useEffect(() => {
-    const fetchFilteredData = async () => {
-      try {
-        setIsLoading(true);
-
-        console.log("Fetching filtered data..."); // Debug
-
-        let jsonData: any;
-
-        if (replay.mode === "local") {
-          const { data } = await parser().replayJson({ pretty: false });
-          jsonData = JSON.parse(new TextDecoder().decode(data));
-          console.log("Local replay JSON data fetched successfully."); // Debug
-        } else {
-          const form = new FormData();
-          form.append("file", replay.input.input);
-          const resp = await fetch("/api/json", { method: "POST", body: form });
-          if (!resp.ok) throw new Error("Failed to fetch JSON data");
-
-          const responseData = new Uint8Array(await resp.arrayBuffer());
-          jsonData = JSON.parse(new TextDecoder().decode(responseData));
-          console.log("Remote replay JSON data fetched successfully."); // Debug
-        }
-
-        console.log("Parsing demolition events from JSON data..."); // Debug
-        const demolitions = extractDemolishExtendedEvents(jsonData);
-
-        console.log("Final demolition events:", demolitions); // Debug
-        setDemolitionEvents(demolitions);
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching or processing replay data:", error); // Debug
-        setIsLoading(false);
-      }
-    };
-
-    fetchFilteredData();
-  }, [parser, replay]);
-
-  if (isLoading) {
-    return (
-      <div className="grid place-items-center">
-        <p className="text-gray-500 text-lg">Processing data...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid place-items-center space-y-4">
-      <h3 className="font-bold text-lg">Demolition Summary:</h3>
-      {demolitionEvents.length > 0 ? (
-        <ul className="list-disc pl-5">
-          {demolitionEvents.map((event, index) => (
-            <li key={index}>
-              Frame {event.frameNumber}: {event.attackerName} → {event.victimName}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No demolitions found in this replay.</p>
-      )}
-    </div>
-  );
-};
-
-export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
   const parser = useReplayParser(); // Get the parser instance
   const { setPrettyPrint } = useUiActions(); // Action to toggle pretty print
   const prettyPrint = usePrettyPrint(); // Current pretty print state
 
-  const [dataByReplay, setDataByReplay] = useState<Record<string, any>>({}); // Store full data per replay
+  const [filteredDataByReplay, setFilteredDataByReplay] = useState<Record<string, any[]>>({}); // Store filtered data per replay
   const [isLoading, setIsLoading] = useState(true); // Track loading state
 
+  const filterDemolishExtendedFrames = (jsonData: any) => {
+    const filteredFrames = jsonData?.network_frames?.frames?.flatMap((frame: any) =>
+      frame?.updated_actors?.filter((actor: any) => actor?.attribute?.DemolishExtended)
+    );
+    return filteredFrames || [];
+  };
+
   useEffect(() => {
-    const fetchFullData = async () => {
+    const fetchFilteredData = async () => {
       try {
         setIsLoading(true); // Set loading to true while fetching data
 
@@ -190,7 +41,7 @@ export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
         }
 
         // Check if data for this replay is already fetched
-        if (dataByReplay[replayKey]) {
+        if (filteredDataByReplay[replayKey]) {
           setIsLoading(false); // Data is already available, stop loading
           return;
         }
@@ -198,10 +49,11 @@ export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
         if (replay.mode === "local") {
           const { data } = await parser().replayJson({ pretty: prettyPrint });
           const jsonData = JSON.parse(new TextDecoder().decode(data));
+          const filteredFrames = filterDemolishExtendedFrames(jsonData);
 
-          setDataByReplay((prev) => ({
+          setFilteredDataByReplay((prev) => ({
             ...prev,
-            [replayKey]: jsonData,
+            [replayKey]: filteredFrames,
           }));
         } else {
           const params = new URLSearchParams({ pretty: prettyPrint.toString() });
@@ -213,21 +65,22 @@ export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
 
           const responseData = new Uint8Array(await resp.arrayBuffer());
           const jsonData = JSON.parse(new TextDecoder().decode(responseData));
+          const filteredFrames = filterDemolishExtendedFrames(jsonData);
 
-          setDataByReplay((prev) => ({
+          setFilteredDataByReplay((prev) => ({
             ...prev,
-            [replayKey]: jsonData,
+            [replayKey]: filteredFrames,
           }));
         }
 
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching or processing data:", error);
+        console.error("Error fetching or filtering data:", error);
         setIsLoading(false);
       }
     };
 
-    fetchFullData();
+    fetchFilteredData();
   }, [parser, replay.mode, prettyPrint, replay.input.input]);
 
   const currentReplayKey =
@@ -235,12 +88,12 @@ export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
       ? replay.input.input
       : `${replay.input.input.name}_${replay.input.input.lastModified}`;
 
-  const jsonData = dataByReplay[currentReplayKey] || null;
+  const filteredData = filteredDataByReplay[currentReplayKey] || [];
 
   if (isLoading) {
     return (
       <div className="grid place-items-center">
-        <p className="text-gray-500 text-lg">Loading replay data...</p>
+        <p className="text-gray-500 text-lg">Loading filtered data...</p>
       </div>
     );
   }
@@ -258,15 +111,15 @@ export const GetFullJsonData = ({ replay }: DownloadReplayJsonProps) => {
         Pretty print
       </label>
 
-      {/* Render Full JSON Data */}
+      {/* Render Filtered Data */}
       <div>
-        <h3 className="font-bold text-lg">Replay JSON Data:</h3>
-        {jsonData ? (
+        <h3 className="font-bold text-lg">Filtered Data:</h3>
+        {filteredData.length > 0 ? (
           <pre className="text-sm overflow-auto">
-            {JSON.stringify(jsonData, null, prettyPrint ? 2 : 0)}
+            {JSON.stringify(filteredData, null, prettyPrint ? 2 : 0)}
           </pre>
         ) : (
-          <p>No data found for the current replay.</p>
+          <p>No filtered data found for the current replay.</p>
         )}
       </div>
     </div>
