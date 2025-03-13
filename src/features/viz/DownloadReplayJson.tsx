@@ -33,7 +33,7 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  export const extractDemolishExtendedEvents = (jsonData: any) => {
+  const extractDemolishExtendedEvents = (jsonData: any) => {
     const actorToPlayer: Record<string, string> = {};
     const seenDemolitions: Record<string, number> = {};
     const demolitionEvents: {
