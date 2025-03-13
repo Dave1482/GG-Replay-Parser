@@ -99,11 +99,10 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
 };
 
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchFilteredData = async () => {
       try {
         setIsLoading(true);
-  
         let jsonData: any;
   
         if (replay.mode === "local") {
@@ -121,10 +120,7 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
   
         // Extract and set demolition events
         const demolitions = extractDemolishExtendedEvents(jsonData);
-        setFilteredDataByReplay((prev) => ({
-          ...prev,
-          [replay.input.input]: demolitions,
-        }));
+        setDemolitionEvents(demolitions); // Use the correct state setter
   
         setIsLoading(false);
       } catch (error) {
@@ -135,6 +131,7 @@ export const GetFilteredJsonData = ({ replay }: DownloadReplayJsonProps) => {
   
     fetchFilteredData();
   }, [parser, replay]);
+
 
   if (isLoading) {
     return (
