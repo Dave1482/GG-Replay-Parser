@@ -15,7 +15,7 @@ const Home = () => {
       <main className="p-4">
         <RlHead />
         {status === "authenticated" ? (
-          <div className="mx-auto max-w-prose space-y-4">
+          <div className="mx-auto space-y-4">
             <ParsingToggle />
             <Replay />
           </div>
