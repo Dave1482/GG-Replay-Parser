@@ -7,6 +7,7 @@ import { useLatestParse, useParsedReplay } from "./replayStore";
 export const Replay = () => {
   const latestParse = useLatestParse();
   const parsedReplay = useParsedReplay();
+  
   return (
     <div className="mt-4 flex flex-col gap-2">
       <ReplayInput />
