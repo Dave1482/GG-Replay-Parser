@@ -5,6 +5,7 @@ import { TeamScores } from "./TeamScores";
 import { DownloadReplayJson } from "./DownloadReplayJson";
 import { GetFilteredJsonData } from "./DownloadReplayJson";
 import { AggregateStats } from "./AggregateStats";
+import { ReplayYield } from "../replay/replayStore";
 import { useReplays, useAggregateStats } from "../replay/replayStore"; // Updated imports
 
 export const Report = () => {
